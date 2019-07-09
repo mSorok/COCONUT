@@ -41,8 +41,6 @@ public class MolecularFeaturesComputationService {
         for(UniqueNaturalProduct np : allNP){
             IAtomContainer acFull = atomContainerToUniqueNaturalProductService.createAtomContainer(np);
 
-            //TODO alo tof calculations
-
 
             try {
                 //AlogP
@@ -61,14 +59,17 @@ public class MolecularFeaturesComputationService {
                 DoubleResult apolresult = (DoubleResult) apolvalue.getValue();
                 np.setApol(apolresult.doubleValue());
 
-
-                BCUTDescriptor bcutDescriptor = new BCUTDescriptor();
-                bcutDescriptor.initialise(builder);
-                np.bcutDescriptor = new ArrayList<>();
-                DescriptorValue bcutvalue = bcutDescriptor.calculate(acFull);
-                DoubleArrayResult bcutResults = (DoubleArrayResult) bcutvalue.getValue();
-                for(int i = 0; i<  bcutResults.length() ;i++){
-                    np.bcutDescriptor.add(bcutResults.get(i));
+                try {
+                    BCUTDescriptor bcutDescriptor = new BCUTDescriptor();
+                    bcutDescriptor.initialise(builder);
+                    np.bcutDescriptor = new ArrayList<>();
+                    DescriptorValue bcutvalue = bcutDescriptor.calculate(acFull);
+                    DoubleArrayResult bcutResults = (DoubleArrayResult) bcutvalue.getValue();
+                    for (int i = 0; i < 6; i++) {
+                        np.bcutDescriptor.add(bcutResults.get(i));
+                    }
+                }catch(ArrayIndexOutOfBoundsException e){
+                    e.printStackTrace();
                 }
 
                 BPolDescriptor bPolDescriptor = new BPolDescriptor();
