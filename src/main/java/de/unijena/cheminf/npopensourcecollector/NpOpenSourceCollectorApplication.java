@@ -57,19 +57,24 @@ public class NpOpenSourceCollectorApplication implements CommandLineRunner {
 
             if(canContinue){
                 //insert in mongodb
-                //readerService.readMolecularFilesAndInsertInMongo();
+                readerService.readMolecularFilesAndInsertInMongo();
 
                 //unify
-                //npUnificationService.doWork();
+                npUnificationService.doWork();
 
 
-                //fragmentReaderService.doWork(0, "/Users/maria/Projects/NPOpenSourceCollector/fragments/fragment_without_sugar.txt");
-                //fragmentReaderService.doWork(1, "/Users/maria/Projects/NPOpenSourceCollector/fragments/fragment_with_sugar.txt");
+                fragmentReaderService.doWork(0, "/Users/maria/Projects/NPOpenSourceCollector/fragments/fragment_without_sugar.txt");
+                fragmentReaderService.doWork(1, "/Users/maria/Projects/NPOpenSourceCollector/fragments/fragment_with_sugar.txt");
 
 
-                //fragmentCalculatorService.doWork();
+                fragmentCalculatorService.doWork();
 
                 molecularFeaturesComputationService.doWork();
+
+
+                //read and insert synthetic molecules
+                readerService.readSyntheticMoleculesAndInsertInMongo(args[1]); //tsv file
+                molecularFeaturesComputationService.doWorkForSM();
 
 
             }

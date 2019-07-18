@@ -2,6 +2,7 @@ package de.unijena.cheminf.npopensourcecollector.readers;
 
 import org.springframework.stereotype.Service;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -66,6 +67,17 @@ public class ReaderService {
 
         return totalDatabases;
 
+    }
+
+    public void readSyntheticMoleculesAndInsertInMongo(String filename){
+        //check file extension and if it is not empty
+        File smFile = new File(filename);
+        if(filename.contains("tsv") && smFile.length()>0){
+            //start read worker
+            ReadWorker rw = new ReadWorker(smFile);
+            rw.doWorkSM();
+
+        }
     }
 
 

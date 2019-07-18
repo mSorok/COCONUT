@@ -33,6 +33,14 @@ public class ReadWorker {
 
     }
 
+    public ReadWorker(File file){
+        this.fileToRead = file;
+        System.out.println("\n\n Working on: "+fileToRead.getAbsolutePath() + "\n\n");
+
+    }
+
+
+
 
     public boolean startWorker(){
         if(acceptFileFormat){
@@ -96,6 +104,14 @@ public class ReadWorker {
         }
 
         this.reader.readFile(this.fileToRead);
+
+    }
+
+
+    public void doWorkSM(){
+
+        SMReader smReader = new SMReader();
+        smReader.readFile(this.fileToRead);
 
     }
 
