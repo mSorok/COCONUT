@@ -1,10 +1,8 @@
 package de.unijena.cheminf.npopensourcecollector;
 
+import com.mongodb.MongoClientOptions;
 import de.unijena.cheminf.npopensourcecollector.readers.ReaderService;
-import de.unijena.cheminf.npopensourcecollector.services.FragmentCalculatorService;
-import de.unijena.cheminf.npopensourcecollector.services.FragmentReaderService;
-import de.unijena.cheminf.npopensourcecollector.services.MolecularFeaturesComputationService;
-import de.unijena.cheminf.npopensourcecollector.services.NPUnificationService;
+import de.unijena.cheminf.npopensourcecollector.services.*;
 import org.openscience.cdk.tools.manipulator.MolecularFormulaManipulator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
@@ -37,6 +35,12 @@ public class NpOpenSourceCollectorApplication implements CommandLineRunner {
     @Autowired
     org.springframework.data.mongodb.core.MongoTemplate mongoTemplate;
 
+    @Autowired
+    SimilarityComputationService similarityComputationService;
+
+    @Autowired
+    UpdaterService updaterService;
+
     public static void main(String[] args) {
         SpringApplication.run(NpOpenSourceCollectorApplication.class, args);
     }
@@ -44,10 +48,13 @@ public class NpOpenSourceCollectorApplication implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
 
-        //cleaning the DB before filling it
-       // mongoTemplate.getDb().drop();
 
-        System.out.println("Code version from 21 June 2019");
+        //cleaning the DB before filling it
+        //mongoTemplate.getDb().drop();
+
+
+
+        System.out.println("Code version from 20 August 2019");
 
         if (args.length > 0) {
             String dataDirectory = args[0];
@@ -63,18 +70,28 @@ public class NpOpenSourceCollectorApplication implements CommandLineRunner {
                 npUnificationService.doWork();
 
 
-                fragmentReaderService.doWork(0, "/Users/maria/Projects/NPOpenSourceCollector/fragments/fragment_without_sugar.txt");
-                fragmentReaderService.doWork(1, "/Users/maria/Projects/NPOpenSourceCollector/fragments/fragment_with_sugar.txt");
+                fragmentReaderService.doWork(0, args[2]);
+                fragmentReaderService.doWork(1, args[3]);
 
 
                 fragmentCalculatorService.doWork();
 
                 molecularFeaturesComputationService.doWork();
+                updaterService.updateSourceNaturalProducts();
 
 
                 //read and insert synthetic molecules
                 readerService.readSyntheticMoleculesAndInsertInMongo(args[1]); //tsv file
                 molecularFeaturesComputationService.doWorkForSM();
+
+
+
+
+                updaterService.updateSourceNaturalProducts();
+                //compute similarities between natural products
+                similarityComputationService.generateAllPairs();
+                similarityComputationService.computeSimilarities();
+
 
 
             }

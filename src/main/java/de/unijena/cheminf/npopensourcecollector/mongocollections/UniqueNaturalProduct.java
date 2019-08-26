@@ -26,6 +26,8 @@ public class UniqueNaturalProduct {
 
     public String smiles;
 
+    public String clean_smiles;
+
 
 
     public String molecular_formula;
@@ -612,5 +614,13 @@ public class UniqueNaturalProduct {
 
     public void setTpsaEfficiency(Double tpsaEfficiency) {
         this.tpsaEfficiency = tpsaEfficiency;
+    }
+
+    public String getClean_smiles() {
+        return clean_smiles;
+    }
+
+    public void setClean_smiles(String clean_smiles) {
+        this.clean_smiles = clean_smiles;
     }
 }

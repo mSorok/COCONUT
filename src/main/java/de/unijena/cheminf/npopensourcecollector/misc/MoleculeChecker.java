@@ -148,23 +148,27 @@ public class MoleculeChecker {
             }
 
             AtomContainerManipulator.convertImplicitToExplicitHydrogens(molecule);
+            AtomContainerManipulator.removeNonChiralHydrogens(molecule);
 
 
 
 
 
 
-            /*
-            //Adding aromaticity to molecules when needed
+
+
+
+
             try {
                 AtomContainerManipulator.percieveAtomTypesAndConfigureAtoms(molecule);
                 AtomContainerManipulator.percieveAtomTypesAndConfigureUnsetProperties(molecule);
-                aromaticity.apply(molecule);
+                //Adding aromaticity to molecules when needed
+                //aromaticity.apply(molecule);
 
             } catch (CDKException e) {
                 e.printStackTrace();
             }
-            */
+
 
 
             //Fixing molecular bonds

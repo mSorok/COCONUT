@@ -16,6 +16,8 @@ import org.openscience.cdk.qsar.descriptors.molecular.*;
 import org.openscience.cdk.qsar.result.DoubleArrayResult;
 import org.openscience.cdk.qsar.result.DoubleResult;
 import org.openscience.cdk.qsar.result.IntegerResult;
+import org.openscience.cdk.smiles.SmiFlavor;
+import org.openscience.cdk.smiles.SmilesGenerator;
 import org.openscience.cdk.tools.manipulator.AtomContainerManipulator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -235,11 +237,24 @@ public class MolecularFeaturesComputationService {
                 np.setTpsaEfficiency(ftpsaResult.doubleValue());
 
 
+
+                //compute the clean smiles
+                SmilesGenerator smilesGenerator = new SmilesGenerator(SmiFlavor.Unique); //Unique - canonical SMILES string, different atom ordering produces the same* SMILES. No isotope or stereochemistry encoded.
+                try {
+                    IAtomContainer nm = AtomContainerManipulator.removeHydrogens(acFull);
+                    String cleanSmiles =  smilesGenerator.create(nm);
+                    np.setClean_smiles(cleanSmiles);
+                } catch (CDKException e) {
+                    e.printStackTrace();
+                }
+
+
+
                 uniqueNaturalProductRepository.save(np);
 
 
 
-            } catch (CDKException e) {
+            } catch (CDKException | OutOfMemoryError e) {
                 e.printStackTrace();
             }
 
@@ -460,10 +475,21 @@ public class MolecularFeaturesComputationService {
                 sm.setTpsaEfficiency(ftpsaResult.doubleValue());
 
 
+                //compute the clean smiles
+                SmilesGenerator smilesGenerator = new SmilesGenerator(SmiFlavor.Unique); //Unique - canonical SMILES string, different atom ordering produces the same* SMILES. No isotope or stereochemistry encoded.
+                try {
+                    IAtomContainer nm = AtomContainerManipulator.removeHydrogens(acFull);
+                    String cleanSmiles =  smilesGenerator.create(nm);
+                    sm.setClean_smiles(cleanSmiles);
+                } catch (CDKException e) {
+                    e.printStackTrace();
+                }
 
 
 
-            } catch (CDKException e) {
+
+
+            } catch (CDKException | OutOfMemoryError e) {
                 e.printStackTrace();
             }
 

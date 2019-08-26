@@ -9,17 +9,18 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>de.unijena.cheminf</groupId>
-    <artifactId>npopensourcecollector</artifactId>
+    <artifactId>coconut</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>NPOpenSourceCollector</name>
-    <description>Demo project for Spring Boot</description>
+    <name>COCONUT</name>
+    <description>COlleCtion of Open Natural prodUcTs</description>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <java.version>1.8</java.version>
         <cdk.version>2.2</cdk.version>
-        <docker.image.prefix>nposc</docker.image.prefix>
+        <guava.version>28.0-jre</guava.version>
+        <docker.image.prefix>coconut</docker.image.prefix>
     </properties>
 
     <repositories>
@@ -221,6 +222,13 @@
             <artifactId>cdk-qsarmolecular</artifactId>
             <version>${cdk.version}</version>
             <scope>compile</scope>
+        </dependency>
+
+
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>${guava.version}</version>
         </dependency>
 
 
