@@ -9,9 +9,9 @@ public class NPSimilarity {
     @Id
     public String id;
 
-    public UniqueNaturalProduct uniqueNaturalProduct1;
+    public String uniqueNaturalProductID1;
 
-    public UniqueNaturalProduct uniqueNaturalProduct2;
+    public String uniqueNaturalProductID2;
 
     public Double tanimoto;
 
@@ -26,24 +26,24 @@ public class NPSimilarity {
         this.id = id;
     }
 
-    public UniqueNaturalProduct getUniqueNaturalProduct1() {
-        return uniqueNaturalProduct1;
-    }
-
-    public void setUniqueNaturalProduct1(UniqueNaturalProduct uniqueNaturalProduct1) {
-        this.uniqueNaturalProduct1 = uniqueNaturalProduct1;
-    }
-
-    public UniqueNaturalProduct getUniqueNaturalProduct2() {
-        return uniqueNaturalProduct2;
-    }
-
-    public void setUniqueNaturalProduct2(UniqueNaturalProduct uniqueNaturalProduct2) {
-        this.uniqueNaturalProduct2 = uniqueNaturalProduct2;
-    }
-
     public Double getTanimoto() {
         return tanimoto;
+    }
+
+    public String getUniqueNaturalProductID1() {
+        return uniqueNaturalProductID1;
+    }
+
+    public void setUniqueNaturalProductID1(String uniqueNaturalProductID1) {
+        this.uniqueNaturalProductID1 = uniqueNaturalProductID1;
+    }
+
+    public String getUniqueNaturalProductID2() {
+        return uniqueNaturalProductID2;
+    }
+
+    public void setUniqueNaturalProductID2(String uniqueNaturalProductID2) {
+        this.uniqueNaturalProductID2 = uniqueNaturalProductID2;
     }
 
     public void setTanimoto(Double tanimoto) {

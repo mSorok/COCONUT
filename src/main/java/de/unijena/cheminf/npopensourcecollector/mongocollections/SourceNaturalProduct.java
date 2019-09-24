@@ -4,6 +4,8 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.ArrayList;
+
 
 @Document
 public class SourceNaturalProduct {
@@ -11,6 +13,7 @@ public class SourceNaturalProduct {
     @Id
     public String id;
 
+    @Indexed
     public String source;
 
     public String originalSmiles;
@@ -21,8 +24,10 @@ public class SourceNaturalProduct {
 
     public String originalInchiKey;
 
+    @Indexed
     public String simpleInchi;
 
+    @Indexed
     public String simpleInchiKey;
 
     public Integer heavyAtomNumber;
@@ -36,6 +41,20 @@ public class SourceNaturalProduct {
     public String acquisition_date;
 
     public UniqueNaturalProduct uniqueNaturalProduct;
+
+    public ArrayList<String> citation;
+
+    public ArrayList<Integer> taxid;
+
+    public ArrayList<String> organismText;
+
+    public String continent;
+
+    public ArrayList<String> geographicLocation;
+
+    public String name;
+
+    public ArrayList<String> synonyms;
 
 
 
@@ -161,5 +180,61 @@ public class SourceNaturalProduct {
 
     public void setUniqueNaturalProduct(UniqueNaturalProduct uniqueNaturalProduct) {
         this.uniqueNaturalProduct = uniqueNaturalProduct;
+    }
+
+    public ArrayList<String> getCitation() {
+        return citation;
+    }
+
+    public void setCitation(ArrayList<String> citation) {
+        this.citation = citation;
+    }
+
+    public ArrayList<Integer> getTaxid() {
+        return taxid;
+    }
+
+    public void setTaxid(ArrayList<Integer> taxid) {
+        this.taxid = taxid;
+    }
+
+    public String getContinent() {
+        return continent;
+    }
+
+    public void setContinent(String continent) {
+        this.continent = continent;
+    }
+
+    public ArrayList<String> getOrganismText() {
+        return organismText;
+    }
+
+    public void setOrganismText(ArrayList<String> organismText) {
+        this.organismText = organismText;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public ArrayList<String> getSynonyms() {
+        return synonyms;
+    }
+
+    public void setSynonyms(ArrayList<String> synonyms) {
+        this.synonyms = synonyms;
+    }
+
+    public ArrayList<String> getGeographicLocation() {
+        return geographicLocation;
+    }
+
+    public void setGeographicLocation(ArrayList<String> geographicLocation) {
+        this.geographicLocation = geographicLocation;
     }
 }

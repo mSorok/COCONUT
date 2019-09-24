@@ -2,7 +2,13 @@ package de.unijena.cheminf.npopensourcecollector.readers;
 
 import java.io.File;
 import java.util.ArrayList;
+
+import de.unijena.cheminf.npopensourcecollector.misc.BeanUtil;
+import de.unijena.cheminf.npopensourcecollector.mongocollections.NPDatabase;
+import de.unijena.cheminf.npopensourcecollector.mongocollections.NPDatabaseRepository;
+import de.unijena.cheminf.npopensourcecollector.mongocollections.SourceNaturalProductRepository;
 import org.openscience.cdk.interfaces.IAtomContainer;
+import org.springframework.beans.factory.annotation.Autowired;
 
 
 public class ReadWorker {
@@ -20,13 +26,22 @@ public class ReadWorker {
     private Reader reader = null ;
 
 
+    NPDatabaseRepository npDatabaseRepository;
+
+
     public ReadWorker(String fileName){
+
+        npDatabaseRepository = BeanUtil.getBean(NPDatabaseRepository.class);
 
         this.fileToRead = new File(fileName);
 
         //System.out.println("\n\n Working on: "+fileToRead.getName() + "\n\n");
         System.out.println("\n\n Working on: "+fileToRead.getAbsolutePath() + "\n\n");
 
+        NPDatabase newDB = new NPDatabase();
+        newDB.setLocalFileName(fileToRead.getAbsolutePath());
+
+        npDatabaseRepository.save(newDB);
 
         acceptFileFormat = acceptFile(fileName);
 
@@ -77,6 +92,9 @@ public class ReadWorker {
         ){
             this.submittedFileFormat="inchi";
             return true;
+        }else if(filename.endsWith("csv") ){
+            this.submittedFileFormat="csv";
+            return true;
         }
 
 
@@ -101,6 +119,9 @@ public class ReadWorker {
         }
         else if(this.submittedFileFormat.equals("inchi")){
             reader = new InChiReader();
+        }
+        else if(this.submittedFileFormat.equals("csv")){
+            reader = new CSVReader();
         }
 
         this.reader.readFile(this.fileToRead);

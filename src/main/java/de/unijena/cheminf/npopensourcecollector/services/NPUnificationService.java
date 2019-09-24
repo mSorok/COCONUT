@@ -68,8 +68,6 @@ public class NPUnificationService {
             unp = computeAdditionalMolecularFeatures(unp);
             uniqueNaturalProductRepository.save(unp);
 
-
-            //the fragmentation should go to another service
         }
 
 

@@ -1,7 +1,9 @@
 package de.unijena.cheminf.npopensourcecollector.readers;
 
 import de.unijena.cheminf.npopensourcecollector.misc.BeanUtil;
+import de.unijena.cheminf.npopensourcecollector.misc.DatabaseTypeChecker;
 import de.unijena.cheminf.npopensourcecollector.misc.MoleculeChecker;
+import de.unijena.cheminf.npopensourcecollector.mongocollections.SourceNaturalProduct;
 import de.unijena.cheminf.npopensourcecollector.mongocollections.SourceNaturalProductRepository;
 import de.unijena.cheminf.npopensourcecollector.services.AtomContainerToSourceNaturalProductService;
 import net.sf.jniinchi.INCHI_OPTION;
@@ -12,8 +14,11 @@ import org.openscience.cdk.inchi.InChIGeneratorFactory;
 import org.openscience.cdk.interfaces.IAtomContainer;
 import org.openscience.cdk.interfaces.IBond;
 import org.openscience.cdk.io.iterator.IteratingSDFReader;
+import org.openscience.cdk.silent.SilentChemObjectBuilder;
 import org.openscience.cdk.smiles.SmiFlavor;
 import org.openscience.cdk.smiles.SmilesGenerator;
+import org.openscience.cdk.tools.CDKHydrogenAdder;
+import org.openscience.cdk.tools.manipulator.AtomContainerManipulator;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -35,6 +40,7 @@ public class MOLReader implements Reader {
 
 
     MoleculeChecker moleculeChecker;
+    DatabaseTypeChecker databaseTypeChecker;
 
     String source;
 
@@ -43,6 +49,7 @@ public class MOLReader implements Reader {
         sourceNaturalProductRepository = BeanUtil.getBean(SourceNaturalProductRepository.class);
         ac2snp = BeanUtil.getBean(AtomContainerToSourceNaturalProductService.class);
         moleculeChecker = BeanUtil.getBean(MoleculeChecker.class);
+        databaseTypeChecker = BeanUtil.getBean(DatabaseTypeChecker.class);
 
     }
 
@@ -72,7 +79,7 @@ public class MOLReader implements Reader {
                     IAtomContainer molecule = reader.next();
 
                     molecule.setProperty("MOL_NUMBER_IN_FILE", Integer.toString(count));
-                    molecule.setProperty("FILE_ORIGIN", file.getName().replace(".sdf", ""));
+                    molecule.setProperty("FILE_ORIGIN", file.getName().replace(".mol", ""));
 
                     molecule.setProperty("SOURCE", source);
 
@@ -83,19 +90,30 @@ public class MOLReader implements Reader {
                     boolean foundOriginalSmiles = false;
                     molecule.setProperty("ORIGINAL_INCHI", "");
                     molecule.setProperty("ORIGINAL_INCHIKEY", "");
+
+                    //trick to avoid having a molecule without even implicit hydrogens
+                    AtomContainerManipulator.percieveAtomTypesAndConfigureAtoms(molecule);
+                    CDKHydrogenAdder adder =
+                            CDKHydrogenAdder.getInstance(SilentChemObjectBuilder.getInstance());
+                    adder.addImplicitHydrogens(molecule);
+
+                    IAtomContainer tmpMolecule = molecule.clone();
                     for(Object p : molecule.getProperties().keySet()){
 
                         if(p.toString().toLowerCase().contains("smiles")){
-                            molecule.setProperty("ORIGINAL_SMILES", molecule.getProperty(p));
+                            tmpMolecule.setProperty("ORIGINAL_SMILES", molecule.getProperty(p));
                             foundOriginalSmiles = true;
                         }
                         if(p.toString().toLowerCase().contains("inchi") && !(p.toString().toLowerCase().contains("inchikey") || p.toString().toLowerCase().contains("inchi_key")) ){
-                            molecule.setProperty("ORIGINAL_INCHI", molecule.getProperty(p));
+                            tmpMolecule.setProperty("ORIGINAL_INCHI", molecule.getProperty(p));
                         }
                         if(p.toString().toLowerCase().contains("inchikey") || p.toString().toLowerCase().contains("inchi_key")){
-                            molecule.setProperty("ORIGINAL_INCHIKEY", molecule.getProperty(p));
+                            tmpMolecule.setProperty("ORIGINAL_INCHIKEY", molecule.getProperty(p));
                         }
                     }
+
+
+                    molecule = tmpMolecule;
 
 
                     if(!foundOriginalSmiles) {
@@ -155,8 +173,38 @@ public class MOLReader implements Reader {
                         molecule.setProperty("ACQUISITION_DATE", dtf.format(localDate));
 
 
+                        SourceNaturalProduct sourceNaturalProduct = ac2snp.createSNPlInstance(molecule);
+
+                        sourceNaturalProduct.setContinent(databaseTypeChecker.checkContinent(this.source));
+
+                        String taxa = databaseTypeChecker.checkKingdom(this.source);
+                        if(taxa.equals("mixed")){
+                            //do things db by db
+                            if(source.equals("nubbedb")){
+                                //there is a p at the beginning of each id for plants
+                                if(molecule.getID().startsWith("p.")){
+                                    taxa = "plants";
+                                }else{
+                                    taxa="animals";
+                                }
+                            }
+                            else if(source.equals("npatlas")){
+                                if(molecule.getID().startsWith("b")){
+                                    taxa = "bacteria";
+                                }else{
+                                    taxa="fungi";
+                                }
+                            }
+                            else{
+                                taxa="notax";
+                            }
+                        }
+                        sourceNaturalProduct.setOrganismText(new ArrayList<String>());
+                        sourceNaturalProduct.organismText.add(taxa);
+
+
                         if(!moleculeChecker.isForbiddenMolecule(molecule)){
-                            sourceNaturalProductRepository.save(ac2snp.createSNPlInstance(molecule));
+                            sourceNaturalProductRepository.save(sourceNaturalProduct);
                         }
                     }
 

@@ -50,11 +50,11 @@ public class NpOpenSourceCollectorApplication implements CommandLineRunner {
 
 
         //cleaning the DB before filling it
-        //mongoTemplate.getDb().drop();
+        mongoTemplate.getDb().drop();
 
 
 
-        System.out.println("Code version from 20 August 2019");
+        System.out.println("Code version from 23rd september 2019");
 
         if (args.length > 0) {
             String dataDirectory = args[0];
@@ -87,10 +87,10 @@ public class NpOpenSourceCollectorApplication implements CommandLineRunner {
 
 
 
-                updaterService.updateSourceNaturalProducts();
                 //compute similarities between natural products
                 similarityComputationService.generateAllPairs();
-                similarityComputationService.computeSimilarities();
+                //similarityComputationService.computeSimilarities();
+                similarityComputationService.doParallelizedWork();
 
 
 

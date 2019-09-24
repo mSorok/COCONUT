@@ -1,7 +1,9 @@
 package de.unijena.cheminf.npopensourcecollector.readers;
 
 import de.unijena.cheminf.npopensourcecollector.misc.BeanUtil;
+import de.unijena.cheminf.npopensourcecollector.misc.DatabaseTypeChecker;
 import de.unijena.cheminf.npopensourcecollector.misc.MoleculeChecker;
+import de.unijena.cheminf.npopensourcecollector.mongocollections.SourceNaturalProduct;
 import de.unijena.cheminf.npopensourcecollector.mongocollections.SourceNaturalProductRepository;
 import de.unijena.cheminf.npopensourcecollector.services.AtomContainerToSourceNaturalProductService;
 import net.sf.jniinchi.INCHI_OPTION;
@@ -29,6 +31,7 @@ public class InChiReader  implements Reader {
     SourceNaturalProductRepository sourceNaturalProductRepository;
     AtomContainerToSourceNaturalProductService ac2snp;
     MoleculeChecker moleculeChecker;
+    DatabaseTypeChecker databaseTypeChecker;
     String source;
 
     public InChiReader(){
@@ -36,6 +39,7 @@ public class InChiReader  implements Reader {
         sourceNaturalProductRepository = BeanUtil.getBean(SourceNaturalProductRepository.class);
         ac2snp = BeanUtil.getBean(AtomContainerToSourceNaturalProductService.class);
         moleculeChecker = BeanUtil.getBean(MoleculeChecker.class);
+        databaseTypeChecker = BeanUtil.getBean(DatabaseTypeChecker.class);
 
     }
 
@@ -151,8 +155,37 @@ public class InChiReader  implements Reader {
 
                             molecule.setProperty("ACQUISITION_DATE", dtf.format(localDate));
 
+                            SourceNaturalProduct sourceNaturalProduct = ac2snp.createSNPlInstance(molecule);
+
+                            sourceNaturalProduct.setContinent(databaseTypeChecker.checkContinent(this.source));
+
+                            String taxa = databaseTypeChecker.checkKingdom(this.source);
+                            if(taxa.equals("mixed")){
+                                //do things db by db
+                                if(source.equals("nubbedb")){
+                                    //there is a p at the beginning of each id for plants
+                                    if(molecule.getID().startsWith("p.")){
+                                        taxa = "plants";
+                                    }else{
+                                        taxa="animals";
+                                    }
+                                }
+                                else if(source.equals("npatlas")){
+                                    if(molecule.getID().startsWith("b")){
+                                        taxa = "bacteria";
+                                    }else{
+                                        taxa="fungi";
+                                    }
+                                }
+                                else{
+                                    taxa="notax";
+                                }
+                            }
+                            sourceNaturalProduct.setOrganismText(new ArrayList<String>());
+                            sourceNaturalProduct.organismText.add(taxa);
+
                             if(!moleculeChecker.isForbiddenMolecule(molecule)){
-                                sourceNaturalProductRepository.save(ac2snp.createSNPlInstance(molecule));
+                                sourceNaturalProductRepository.save(sourceNaturalProduct);
                             }
 
 

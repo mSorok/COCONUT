@@ -262,6 +262,7 @@ public class MolecularFeaturesComputationService {
 
             uniqueNaturalProductRepository.save(np);
         }
+        System.out.println("done");
 
 
     }
@@ -501,7 +502,7 @@ public class MolecularFeaturesComputationService {
         }
 
 
-
+        System.out.println("done");
 
     }
 

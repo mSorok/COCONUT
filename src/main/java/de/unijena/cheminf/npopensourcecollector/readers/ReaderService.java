@@ -21,10 +21,6 @@ public class ReaderService {
     public boolean directoryContainsMolecularFiles(String directory){
         boolean molecularFileFound = false;
 
-
-
-
-
         try (Stream<Path> walk = Files.walk(Paths.get(directory))) {
 
             this.molecularFiles = walk.filter(Files::isRegularFile)
@@ -32,7 +28,8 @@ public class ReaderService {
 
 
             for(String f : this.molecularFiles){
-                if(f.contains("sdf") || f.contains("smi") || f.contains("mol") || f.contains("inchi")){
+                System.out.println(f);
+                if(f.contains("sdf") || f.contains("smi") || f.contains("mol") || f.contains("inchi") || f.contains("csv")){
                     molecularFileFound = true;
                 }
             }
@@ -40,9 +37,6 @@ public class ReaderService {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-
-
         return molecularFileFound;
 
     }

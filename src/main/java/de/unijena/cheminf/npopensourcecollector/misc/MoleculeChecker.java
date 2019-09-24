@@ -108,7 +108,6 @@ public class MoleculeChecker {
             }
 
 
-            //Remove aromaticity
             String smi;
             SmilesGenerator sg = new SmilesGenerator(SmiFlavor.Unique);
             SmilesParser sp = new SmilesParser(DefaultChemObjectBuilder.getInstance());

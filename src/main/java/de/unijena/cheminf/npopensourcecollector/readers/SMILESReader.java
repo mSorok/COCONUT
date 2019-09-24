@@ -1,7 +1,9 @@
 package de.unijena.cheminf.npopensourcecollector.readers;
 
 import de.unijena.cheminf.npopensourcecollector.misc.BeanUtil;
+import de.unijena.cheminf.npopensourcecollector.misc.DatabaseTypeChecker;
 import de.unijena.cheminf.npopensourcecollector.misc.MoleculeChecker;
+import de.unijena.cheminf.npopensourcecollector.mongocollections.SourceNaturalProduct;
 import de.unijena.cheminf.npopensourcecollector.mongocollections.SourceNaturalProductRepository;
 import de.unijena.cheminf.npopensourcecollector.services.AtomContainerToSourceNaturalProductService;
 import net.sf.jniinchi.INCHI_OPTION;
@@ -20,6 +22,7 @@ import java.io.*;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class SMILESReader implements Reader {
@@ -31,6 +34,7 @@ public class SMILESReader implements Reader {
     SourceNaturalProductRepository sourceNaturalProductRepository;
     AtomContainerToSourceNaturalProductService ac2snp;
     MoleculeChecker moleculeChecker;
+    DatabaseTypeChecker databaseTypeChecker;
     String source;
 
 
@@ -39,6 +43,7 @@ public class SMILESReader implements Reader {
         sourceNaturalProductRepository = BeanUtil.getBean(SourceNaturalProductRepository.class);
         ac2snp = BeanUtil.getBean(AtomContainerToSourceNaturalProductService.class);
         moleculeChecker = BeanUtil.getBean(MoleculeChecker.class);
+        databaseTypeChecker = BeanUtil.getBean(DatabaseTypeChecker.class);
 
     }
 
@@ -56,9 +61,7 @@ public class SMILESReader implements Reader {
 
         this.source = file.getName().toLowerCase().replace(".smi", "");
 
-        try{
-
-            smilesReader = new LineNumberReader(new InputStreamReader(new FileInputStream(file)));
+        try(BufferedReader smilesReader = new BufferedReader(new FileReader(file))) {
             System.out.println("SMILES reader creation and inserting in MongoDB for "+source);
 
 
@@ -77,8 +80,21 @@ public class SMILESReader implements Reader {
 
 
                             molecule.setProperty("MOL_NUMBER_IN_FILE", Integer.toString(count));
-                            molecule.setProperty("ID", splitted[1]);
-                            molecule.setID(splitted[1]);
+                            if(splitted.length==2) {
+                                molecule.setProperty("ID", splitted[1]);
+                                molecule.setID(splitted[1]);
+                            }else if(splitted.length==1){
+                                //no id
+                                molecule.setProperty("ID", Integer.toString(count));
+                                molecule.setID(Integer.toString(count));
+                            }else if(splitted.length>2){
+                                //join everything after 1
+                                ArrayList<String> splitted2 = new ArrayList<String>(Arrays.asList(splitted));
+
+                                String nid = String.join(" ", splitted2);
+                                molecule.setProperty("ID", nid);
+                                molecule.setID(nid);
+                            }
 
                             molecule.setProperty("FILE_ORIGIN", file.getName().replace(".smi", ""));
 
@@ -134,8 +150,38 @@ public class SMILESReader implements Reader {
 
                                 molecule.setProperty("ACQUISITION_DATE", dtf.format(localDate));
 
+
+                                SourceNaturalProduct sourceNaturalProduct = ac2snp.createSNPlInstance(molecule);
+
+                                sourceNaturalProduct.setContinent(databaseTypeChecker.checkContinent(this.source));
+
+                                String taxa = databaseTypeChecker.checkKingdom(this.source);
+                                if(taxa.equals("mixed")){
+                                    //do things db by db
+                                    if(source.equals("nubbedb")){
+                                        //there is a p at the beginning of each id for plants
+                                        if(molecule.getID().startsWith("p.")){
+                                            taxa = "plants";
+                                        }else{
+                                            taxa="animals";
+                                        }
+                                    }
+                                    else if(source.equals("npatlas")){
+                                        if(molecule.getID().startsWith("b")){
+                                            taxa = "bacteria";
+                                        }else{
+                                            taxa="fungi";
+                                        }
+                                    }
+                                    else{
+                                        taxa="notax";
+                                    }
+                                }
+                                sourceNaturalProduct.setOrganismText(new ArrayList<String>());
+                                sourceNaturalProduct.organismText.add(taxa);
+
                                 if(!moleculeChecker.isForbiddenMolecule(molecule)){
-                                    sourceNaturalProductRepository.save(ac2snp.createSNPlInstance(molecule));
+                                    sourceNaturalProductRepository.save(sourceNaturalProduct);
                                 }
 
 
@@ -144,6 +190,9 @@ public class SMILESReader implements Reader {
 
                         } catch (InvalidSmilesException e) {
                             e.printStackTrace();
+                            System.out.println(line);
+                            System.out.println(splitted);
+                            System.out.println(splitted[0]);
                             smilesReader.skip(count - 1);
                         }
 

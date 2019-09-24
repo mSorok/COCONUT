@@ -1,10 +1,12 @@
 package de.unijena.cheminf.npopensourcecollector.services;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import de.unijena.cheminf.npopensourcecollector.mongocollections.NPSimilarity;
 import de.unijena.cheminf.npopensourcecollector.mongocollections.NPSimilarityRepository;
 import de.unijena.cheminf.npopensourcecollector.mongocollections.UniqueNaturalProduct;
 import de.unijena.cheminf.npopensourcecollector.mongocollections.UniqueNaturalProductRepository;
+import org.checkerframework.common.aliasing.qual.Unique;
 import org.openscience.cdk.exception.CDKException;
 import org.openscience.cdk.fingerprint.Fingerprinter;
 import org.openscience.cdk.fingerprint.IBitFingerprint;
@@ -15,6 +17,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.ThreadPoolExecutor;
 
 @Service
 public class SimilarityComputationService {
@@ -29,6 +35,12 @@ public class SimilarityComputationService {
     AtomContainerToUniqueNaturalProductService atomContainerToUniqueNaturalProductService;
 
     private Set<Set<UniqueNaturalProduct>> npPairs;
+
+
+    private Integer numberOfThreads = 100 ;
+
+    List<Future<?>> futures = new ArrayList<Future<?>>();
+
 
     public void computeSimilarities(){
         Fingerprinter fingerprinter = new Fingerprinter();
@@ -52,8 +64,8 @@ public class SimilarityComputationService {
                 if (tanimoto_coefficient>=0.5){
 
                     NPSimilarity newSimilarity = new NPSimilarity();
-                    newSimilarity.setUniqueNaturalProduct1(pair.get(0));
-                    newSimilarity.setUniqueNaturalProduct2(pair.get(1));
+                    newSimilarity.setUniqueNaturalProductID1(pair.get(0).getId());
+                    newSimilarity.setUniqueNaturalProductID2(pair.get(1).getId());
                     newSimilarity.setTanimoto(tanimoto_coefficient);
                     //newSimilarity.setDistanceMoment(distance_moment);
 
@@ -71,17 +83,97 @@ public class SimilarityComputationService {
 
 
     public void generateAllPairs(){
+        System.out.println("Computing pairs of NPs");
 
         List<UniqueNaturalProduct> allNP = uniqueNaturalProductRepository.findAll();
 
         Set<UniqueNaturalProduct> npset = new HashSet<>(allNP);
 
 
-        System.out.println("Computing pairs of NPs");
+
 
         this.npPairs = Sets.combinations( npset, 2);
 
         System.out.println("done");
 
+    }
+
+
+    public void doParallelizedWork(){
+
+        System.out.println("Start parallel computation of Tanimoto");
+
+        try{
+
+            Hashtable<String,List<UniqueNaturalProduct>> hashtableOfNPPairs = new Hashtable<>();
+            for(Set spair : npPairs) {
+                List<UniqueNaturalProduct> pair = new ArrayList<UniqueNaturalProduct>(spair);
+                hashtableOfNPPairs.put(pair.toString(), pair);
+
+            }
+
+
+            ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(numberOfThreads);
+
+
+
+            List<List<String>>  npPairBatch =  Lists.partition(new ArrayList<String>(hashtableOfNPPairs.keySet()), 100);
+
+            int taskcount = 0;
+
+            List<Callable<Object>> todo = new ArrayList<Callable<Object>>(npPairBatch.size());
+
+            System.out.println("Total number of tasks:" + npPairBatch.size());
+
+            for(List<String> stringNPBatch : npPairBatch){
+                SimilarityComputationTask task  = new SimilarityComputationTask();
+
+                ArrayList<List<UniqueNaturalProduct>> pairBatch= new ArrayList<>();
+
+                for(String s : stringNPBatch){
+                    pairBatch.add(hashtableOfNPPairs.get(s));
+                }
+
+                task.setNpPairsToCompute(pairBatch);
+                taskcount++;
+
+                System.out.println("Task "+taskcount+" created");
+                task.taskid=taskcount;
+
+                Future<?> f = executor.submit(task);
+
+                futures.add(f);
+
+                //executor.execute(task);
+
+                System.out.println("Task "+taskcount+" executing");
+
+
+            }
+
+
+
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+
+    }
+
+
+    public boolean processFinished(){
+
+        boolean allFuturesDone = true;
+
+        for(Future<?> future : this.futures){
+
+            allFuturesDone &= future.isDone();
+
+        }
+
+
+        System.out.println("Finished parallel computation of Tanimoto");
+        return allFuturesDone;
     }
 }

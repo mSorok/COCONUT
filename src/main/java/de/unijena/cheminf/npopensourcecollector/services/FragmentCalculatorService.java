@@ -55,6 +55,9 @@ public class FragmentCalculatorService {
 
         List<UniqueNaturalProduct> allNP = uniqueNaturalProductRepository.findAll();
 
+        int count=1;
+        int total=allNP.size();
+
         for(UniqueNaturalProduct np : allNP){
 
 
@@ -134,9 +137,15 @@ public class FragmentCalculatorService {
 
                 uniqueNaturalProductRepository.save(np);
             }
+            count++;
+            if(count%10000==0){
+                System.out.println("Molecules fragmented: "+count+" ("+(double)count/(double)total+"% )");
+
+            }
         }
 
 
+        System.out.println("Done fragmenting natural products");
     }
 
 
