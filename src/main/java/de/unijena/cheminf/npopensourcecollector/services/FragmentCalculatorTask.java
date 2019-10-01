@@ -1,6 +1,6 @@
 package de.unijena.cheminf.npopensourcecollector.services;
 
-import com.google.common.collect.Lists;
+
 import de.unijena.cheminf.npopensourcecollector.misc.LinearSugars;
 import de.unijena.cheminf.npopensourcecollector.mongocollections.Fragment;
 import de.unijena.cheminf.npopensourcecollector.mongocollections.FragmentRepository;
@@ -18,22 +18,28 @@ import org.openscience.cdk.tools.manipulator.AtomContainerManipulator;
 import org.openscience.cdk.tools.manipulator.BondManipulator;
 import org.openscience.cdk.tools.manipulator.MolecularFormulaManipulator;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.annotation.Transient;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.concurrent.*;
 
 @Service
-public class FragmentCalculatorService {
+@Transactional(propagation = Propagation.REQUIRED, readOnly = false)
+public class FragmentCalculatorTask implements Runnable {
 
     @Autowired
+    @Transient
     UniqueNaturalProductRepository uniqueNaturalProductRepository;
 
     @Autowired
+    @Transient
     FragmentRepository fragmentRepository;
 
     @Autowired
+    @Transient
     AtomContainerToUniqueNaturalProductService atomContainerToUniqueNaturalProductService;
 
 
@@ -46,99 +52,16 @@ public class FragmentCalculatorService {
 
     private final int height = 2;
 
-    List<Future<?>> futures = new ArrayList<Future<?>>();
+    List<UniqueNaturalProduct> batchOfNaturalProducts;
+
+    Integer taskid;
 
 
-
-
-
-
-    public void doParallelizedWork(int nbThreads){
-        System.out.println("Start parallel fragmentation of natural products");
-
-        try{
-
-            List<UniqueNaturalProduct> allNP = uniqueNaturalProductRepository.findAll();
-
-            ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(nbThreads);
-
-            List<List<UniqueNaturalProduct>>  nUniqueMoleculesBatch =  Lists.partition(allNP, 10000);
-
-            int taskcount = 0;
-
-            List<Callable<Object>> todo = new ArrayList<Callable<Object>>(nUniqueMoleculesBatch.size());
-            System.out.println("Total number of tasks:" + nUniqueMoleculesBatch.size());
-
-            for(List<UniqueNaturalProduct> oneUNPbatch : nUniqueMoleculesBatch){
-
-                FragmentCalculatorTask task = new FragmentCalculatorTask();
-
-                task.setBatchOfNaturalProducts(oneUNPbatch);
-                taskcount++;
-
-                System.out.println("Task "+taskcount+" created");
-                task.taskid=taskcount;
-
-                Future<?> f = executor.submit(task);
-
-                futures.add(f);
-
-                //executor.execute(task);
-
-                System.out.println("Task "+taskcount+" executing");
-
-            }
-
-            executor.shutdown();
-            //executor.awaitTermination(210, TimeUnit.SECONDS);
-
-
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-
-        System.out.println("Done fragmenting natural products");
-        Date date = new Date();
-        SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
-        System.out.println("at: "+formatter.format(date)+"\n");
-
-    }
-
-
-    public boolean processFinished(){
-
-        boolean allFuturesDone = true;
-
-        for(Future<?> future : this.futures){
-
-            allFuturesDone &= future.isDone();
-
-        }
-
-
-        System.out.println("Finished parallel computation of Tanimoto");
-        return allFuturesDone;
-    }
-
-
-
-    public void doWork(){
-
-        System.out.println("Start fragmenting natural products");
-
-
-        List<UniqueNaturalProduct> allNP = uniqueNaturalProductRepository.findAll();
-
-        int count=1;
-        int total=allNP.size();
-
-        for(UniqueNaturalProduct np : allNP){
-
-
+    @Override
+    public void run() {
+        System.out.println("Computing NP fragments for task "+taskid);
+        for(UniqueNaturalProduct np : batchOfNaturalProducts){
             IAtomContainer acFull = atomContainerToUniqueNaturalProductService.createAtomContainer(np);
-
             IAtomContainer acSugarFree = removeSugars(acFull);
 
             if(acSugarFree != null && acSugarFree.getAtomCount()>0) {
@@ -213,93 +136,22 @@ public class FragmentCalculatorService {
 
                 uniqueNaturalProductRepository.save(np);
             }
-            count++;
-            if(count%10000==0){
-                System.out.println("Molecules fragmented: "+count+" ("+(double)count/(double)total+"% )");
-                Date date = new Date();
-                SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
-                System.out.println("at: "+formatter.format(date)+"\n");
 
-            }
         }
-
-
-        System.out.println("Done fragmenting natural products");
         Date date = new Date();
         SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
-        System.out.println("at: "+formatter.format(date)+"\n");
+        System.out.println("Task "+taskid+" finished at: "+formatter.format(date)+"\n");
+
+
     }
 
-
-
-
-
-    public List<String> generateAtomSignatures(IAtomContainer atomContainer, Integer height) {
-
-        List<String> atomSignatures = new ArrayList<>();
-
-
-
-        //atomContainer = calculateAromaticity(atomContainer);
-
-        if( atomContainer != null  && !atomContainer.isEmpty()) {
-
-            for (IAtom atom : atomContainer.atoms()) {
-                try {
-                    AtomSignature atomSignature = new AtomSignature(atom, height, atomContainer);
-                    atomSignatures.add(atomSignature.toCanonicalString());
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-            return atomSignatures;
-        }
-        else{
-            return null;
-        }
+    public List<UniqueNaturalProduct> getBatchOfNaturalProducts() {
+        return batchOfNaturalProducts;
     }
 
-
-    public Hashtable<String, Integer> generateCountedAtomSignatures(IAtomContainer atomContainer, Integer height) {
-
-        List<String> atomSignatures = new ArrayList<>();
-
-        Hashtable<String, Integer> countedAtomSignatures = new Hashtable<>();
-
-
-
-        //atomContainer = calculateAromaticity(atomContainer);
-
-        if(atomContainer !=null && !atomContainer.isEmpty()) {
-
-            for (IAtom atom : atomContainer.atoms()) {
-                try {
-                    AtomSignature atomSignature = new AtomSignature(atom, height, atomContainer);
-                    atomSignatures.add(atomSignature.toCanonicalString());
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-
-            for(String signature : atomSignatures){
-                if(countedAtomSignatures.containsKey(signature)){
-                    countedAtomSignatures.put(signature, countedAtomSignatures.get(signature)+1);
-                }
-                else{
-                    countedAtomSignatures.put(signature,1);
-                }
-
-            }
-
-
-            return countedAtomSignatures;
-        }
-        else{
-            return null;
-        }
+    public void setBatchOfNaturalProducts(List<UniqueNaturalProduct> batchOfNaturalProducts) {
+        this.batchOfNaturalProducts = batchOfNaturalProducts;
     }
-
-
 
 
 
@@ -416,6 +268,49 @@ public class FragmentCalculatorService {
         }
         return numberHeavyAtoms;
     }
+
+
+
+
+    public Hashtable<String, Integer> generateCountedAtomSignatures(IAtomContainer atomContainer, Integer height) {
+
+        List<String> atomSignatures = new ArrayList<>();
+
+        Hashtable<String, Integer> countedAtomSignatures = new Hashtable<>();
+
+
+
+        //atomContainer = calculateAromaticity(atomContainer);
+
+        if(atomContainer !=null && !atomContainer.isEmpty()) {
+
+            for (IAtom atom : atomContainer.atoms()) {
+                try {
+                    AtomSignature atomSignature = new AtomSignature(atom, height, atomContainer);
+                    atomSignatures.add(atomSignature.toCanonicalString());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+
+            for(String signature : atomSignatures){
+                if(countedAtomSignatures.containsKey(signature)){
+                    countedAtomSignatures.put(signature, countedAtomSignatures.get(signature)+1);
+                }
+                else{
+                    countedAtomSignatures.put(signature,1);
+                }
+
+            }
+
+
+            return countedAtomSignatures;
+        }
+        else{
+            return null;
+        }
+    }
+
 
 
 

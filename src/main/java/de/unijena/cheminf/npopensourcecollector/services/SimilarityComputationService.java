@@ -17,10 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
-import java.util.concurrent.Callable;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.*;
 
 @Service
 public class SimilarityComputationService {
@@ -37,7 +34,6 @@ public class SimilarityComputationService {
     private Set<Set<UniqueNaturalProduct>> npPairs;
 
 
-    private Integer numberOfThreads = 100 ;
 
     List<Future<?>> futures = new ArrayList<Future<?>>();
 
@@ -99,7 +95,7 @@ public class SimilarityComputationService {
     }
 
 
-    public void doParallelizedWork(){
+    public void doParallelizedWork( Integer numberOfThreads){
 
         System.out.println("Start parallel computation of Tanimoto");
 
@@ -117,7 +113,7 @@ public class SimilarityComputationService {
 
 
 
-            List<List<String>>  npPairBatch =  Lists.partition(new ArrayList<String>(hashtableOfNPPairs.keySet()), 100);
+            List<List<String>>  npPairBatch =  Lists.partition(new ArrayList<String>(hashtableOfNPPairs.keySet()), 1000);
 
             int taskcount = 0;
 
@@ -150,6 +146,9 @@ public class SimilarityComputationService {
 
 
             }
+
+            executor.shutdown();
+            //executor.awaitTermination(210, TimeUnit.SECONDS);
 
 
 

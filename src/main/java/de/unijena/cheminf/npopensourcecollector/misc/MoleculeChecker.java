@@ -47,7 +47,7 @@ public class MoleculeChecker {
              */
 
             List<IAtomContainer> listAC = mcc.checkConnectivity(molecule);
-            if( listAC.size()>1 ){
+            if( listAC.size()>=1 ){
                 IAtomContainer biggestComponent = listAC.get(0);
                 for(IAtomContainer partac : listAC){
                     if(partac.getAtomCount()>biggestComponent.getAtomCount()){
@@ -65,6 +65,10 @@ public class MoleculeChecker {
                 if(nbheavyatoms<5 || nbheavyatoms>=200){
                     return null;
                 }
+            }
+            else{
+
+                return null;
             }
 
 
@@ -148,12 +152,6 @@ public class MoleculeChecker {
 
             AtomContainerManipulator.convertImplicitToExplicitHydrogens(molecule);
             AtomContainerManipulator.removeNonChiralHydrogens(molecule);
-
-
-
-
-
-
 
 
 

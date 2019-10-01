@@ -16,7 +16,7 @@ public class Fragment {
 
     public Integer withsugar;
 
-    @Indexed
+    @Indexed(name = "signature_index")
     public String signature;
 
     public Integer height;

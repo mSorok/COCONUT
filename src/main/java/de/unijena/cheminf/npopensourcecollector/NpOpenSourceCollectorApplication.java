@@ -54,7 +54,7 @@ public class NpOpenSourceCollectorApplication implements CommandLineRunner {
 
 
 
-        System.out.println("Code version from 23rd september 2019");
+        System.out.println("Code version from 1st October 2019");
 
         if (args.length > 0) {
             String dataDirectory = args[0];
@@ -74,7 +74,9 @@ public class NpOpenSourceCollectorApplication implements CommandLineRunner {
                 fragmentReaderService.doWork(1, args[3]);
 
 
-                fragmentCalculatorService.doWork();
+                //fragmentCalculatorService.doWork();
+                fragmentCalculatorService.doParallelizedWork(16);
+
 
                 molecularFeaturesComputationService.doWork();
                 updaterService.updateSourceNaturalProducts();
@@ -88,9 +90,9 @@ public class NpOpenSourceCollectorApplication implements CommandLineRunner {
 
 
                 //compute similarities between natural products
-                similarityComputationService.generateAllPairs();
-                //similarityComputationService.computeSimilarities();
-                similarityComputationService.doParallelizedWork();
+                //similarityComputationService.generateAllPairs();
+                // //similarityComputationService.computeSimilarities();
+               // similarityComputationService.doParallelizedWork(16);
 
 
 

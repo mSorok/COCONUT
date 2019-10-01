@@ -20,21 +20,21 @@ public class UniqueNaturalProduct {
 
     public Integer heavy_atom_number;
 
-    @Indexed
+    @Indexed(name = "inchi_index")
     public String inchi;
 
-    @Indexed
+    @Indexed(name="inchikey_index")
     public String inchikey;
 
-    @Indexed
+    @Indexed(name="smiles_index")
     public String smiles;
 
-    @Indexed
+    @Indexed(name="clean_smiles_index")
     public String clean_smiles;
 
 
 
-    @Indexed
+    @Indexed(name="molecular_formular_index")
     public String molecular_formula;
 
     public Double molecular_weight;
@@ -46,7 +46,7 @@ public class UniqueNaturalProduct {
 
     public ArrayList<String> continent;
 
-    @Indexed
+    @Indexed(name = "name_index")
     public String name;
 
 

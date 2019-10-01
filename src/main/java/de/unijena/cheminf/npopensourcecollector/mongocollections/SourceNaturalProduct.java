@@ -13,7 +13,7 @@ public class SourceNaturalProduct {
     @Id
     public String id;
 
-    @Indexed
+    @Indexed(name = "source_index")
     public String source;
 
     public String originalSmiles;
@@ -24,10 +24,10 @@ public class SourceNaturalProduct {
 
     public String originalInchiKey;
 
-    @Indexed
+    @Indexed(name = "simpleinchi_index")
     public String simpleInchi;
 
-    @Indexed
+    @Indexed(name = "simpleinchikey_index")
     public String simpleInchiKey;
 
     public Integer heavyAtomNumber;
