@@ -7,6 +7,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.security.PublicKey;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Hashtable;
 
 @Document
@@ -40,14 +41,18 @@ public class UniqueNaturalProduct {
     public Double molecular_weight;
 
 
-    public ArrayList<String> citationDOI;
+    public HashSet<String> citationDOI;
 
-    public ArrayList<Integer> taxid;
+    public HashSet<Integer> taxid;
 
-    public ArrayList<String> continent;
+    public HashSet<String> textTaxa;
+
+    public HashSet<String> geoLocation;
 
     @Indexed(name = "name_index")
     public String name;
+
+    public HashSet<String> synonyms;
 
 
     public Double npl_noh_score;
@@ -640,28 +645,28 @@ public class UniqueNaturalProduct {
     }
 
 
-    public ArrayList<String> getCitationDOI() {
+    public HashSet<String> getCitationDOI() {
         return citationDOI;
     }
 
-    public void setCitationDOI(ArrayList<String> citationDOI) {
+    public void setCitationDOI(HashSet<String> citationDOI) {
         this.citationDOI = citationDOI;
     }
 
-    public ArrayList<Integer> getTaxid() {
+    public HashSet<Integer> getTaxid() {
         return taxid;
     }
 
-    public void setTaxid(ArrayList<Integer> taxid) {
+    public void setTaxid(HashSet<Integer> taxid) {
         this.taxid = taxid;
     }
 
-    public ArrayList<String> getContinent() {
-        return continent;
+    public HashSet<String> getGeoLocation() {
+        return geoLocation;
     }
 
-    public void setContinent(ArrayList<String> continent) {
-        this.continent = continent;
+    public void setGeoLocation(HashSet<String> geoLocation) {
+        this.geoLocation = geoLocation;
     }
 
     public String getName() {
@@ -670,5 +675,21 @@ public class UniqueNaturalProduct {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public HashSet<String> getTextTaxa() {
+        return textTaxa;
+    }
+
+    public void setTextTaxa(HashSet<String> textTaxa) {
+        this.textTaxa = textTaxa;
+    }
+
+    public HashSet<String> getSynonyms() {
+        return synonyms;
+    }
+
+    public void setSynonyms(HashSet<String> synonyms) {
+        this.synonyms = synonyms;
     }
 }

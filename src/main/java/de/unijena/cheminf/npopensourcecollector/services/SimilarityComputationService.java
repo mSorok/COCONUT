@@ -145,10 +145,18 @@ public class SimilarityComputationService {
                 System.out.println("Task "+taskcount+" executing");
 
 
+
+
             }
 
             executor.shutdown();
             //executor.awaitTermination(210, TimeUnit.SECONDS);
+
+            try {
+                executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+            } catch (InterruptedException e) {
+                System.out.println("Interrupted exectuion of the molecular similarity calculation! please check consistency of results!");
+            }
 
 
 

@@ -16,6 +16,8 @@ import org.openscience.cdk.tools.manipulator.MolecularFormulaManipulator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.function.IntBinaryOperator;
 
@@ -57,11 +59,59 @@ public class NPUnificationService {
 
             unp = uniqueNaturalProductRepository.save(unp);
 
+            unp.synonyms = new HashSet<>();
+            unp.textTaxa = new HashSet<>();
+            unp.taxid = new HashSet<>();
+            unp.geoLocation = new HashSet<>();
+            unp.citationDOI = new HashSet<>();
+
             //associate the UniqueNaturalProduct entry to each of the sources
             for(SourceNaturalProduct snp : snpList){
                 snp.setUniqueNaturalProduct(unp);
                 sourceNaturalProductRepository.save(snp);
+
+                //add annotations from SourceNaturalProducts
+
+                //name
+                if(unp.getName() == null && snp.getName() != null){
+                    unp.setName(snp.getName());
+                }
+                else if( unp.getName() != null && snp.getName() != null){
+                    unp.synonyms.add(snp.getName());
+                }
+
+                //synonyms
+
+                if(snp.getSynonyms() != null){
+                    unp.synonyms.addAll(snp.getSynonyms());
+                }
+
+
+                //species
+                if(snp.organismText != null ){
+                    unp.textTaxa.addAll(snp.organismText);
+                }
+                if(snp.taxid != null){
+                    unp.taxid.addAll(snp.taxid);
+                }
+
+
+                //geo
+                if(snp.getGeographicLocation() != null){
+                    unp.geoLocation.addAll(snp.getGeographicLocation());
+                }
+                if(snp.getContinent() != null){
+                    unp.geoLocation.add(snp.getContinent());
+                }
+
+
+                //refs
+                if(snp.getCitation() != null){
+                    unp.citationDOI.addAll(snp.getCitation());
+                }
             }
+
+            unp = uniqueNaturalProductRepository.save(unp);
 
             //compute molecular parameters for the UniqueNaturalProduct
 

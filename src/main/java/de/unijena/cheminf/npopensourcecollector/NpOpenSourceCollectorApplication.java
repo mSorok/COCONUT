@@ -52,8 +52,6 @@ public class NpOpenSourceCollectorApplication implements CommandLineRunner {
         //cleaning the DB before filling it
         mongoTemplate.getDb().drop();
 
-
-
         System.out.println("Code version from 1st October 2019");
 
         if (args.length > 0) {
