@@ -10,6 +10,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 
+import java.util.concurrent.TimeUnit;
 
 import static java.lang.System.exit;
 
@@ -74,6 +75,10 @@ public class NpOpenSourceCollectorApplication implements CommandLineRunner {
 
                 //fragmentCalculatorService.doWork();
                 fragmentCalculatorService.doParallelizedWork(16);
+
+                while(!fragmentCalculatorService.processFinished()){
+                    TimeUnit.MINUTES.sleep(1);
+                }
 
 
                 molecularFeaturesComputationService.doWork();
