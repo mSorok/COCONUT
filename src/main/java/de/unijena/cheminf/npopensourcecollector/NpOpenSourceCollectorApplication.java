@@ -63,6 +63,8 @@ public class NpOpenSourceCollectorApplication implements CommandLineRunner {
 
             if(canContinue){
                 //insert in mongodb
+
+
                 readerService.readMolecularFilesAndInsertInMongo();
 
                 //unify
@@ -74,9 +76,11 @@ public class NpOpenSourceCollectorApplication implements CommandLineRunner {
 
 
                 //fragmentCalculatorService.doWork();
-                fragmentCalculatorService.doParallelizedWork(16);
+
+                fragmentCalculatorService.doParallelizedWork(200);
 
                 while(!fragmentCalculatorService.processFinished()){
+                    System.out.println("I'm waiting");
                     TimeUnit.MINUTES.sleep(1);
                 }
 
@@ -93,9 +97,13 @@ public class NpOpenSourceCollectorApplication implements CommandLineRunner {
 
 
                 //compute similarities between natural products
-                //similarityComputationService.generateAllPairs();
+                similarityComputationService.generateAllPairs();
                 // //similarityComputationService.computeSimilarities();
-               // similarityComputationService.doParallelizedWork(16);
+                similarityComputationService.doParallelizedWork(200);
+                while(!similarityComputationService.processFinished()){
+                    System.out.println("I'm waiting");
+                    TimeUnit.MINUTES.sleep(1);
+                }
 
 
 

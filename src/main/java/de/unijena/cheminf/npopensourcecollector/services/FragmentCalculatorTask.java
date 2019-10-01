@@ -1,6 +1,7 @@
 package de.unijena.cheminf.npopensourcecollector.services;
 
 
+import de.unijena.cheminf.npopensourcecollector.misc.BeanUtil;
 import de.unijena.cheminf.npopensourcecollector.misc.LinearSugars;
 import de.unijena.cheminf.npopensourcecollector.mongocollections.Fragment;
 import de.unijena.cheminf.npopensourcecollector.mongocollections.FragmentRepository;
@@ -59,8 +60,15 @@ public class FragmentCalculatorTask implements Runnable {
 
     @Override
     public void run() {
+
+        this.uniqueNaturalProductRepository = BeanUtil.getBean(UniqueNaturalProductRepository.class);
+        this.fragmentRepository = BeanUtil.getBean(FragmentRepository.class);
+        this.atomContainerToUniqueNaturalProductService = BeanUtil.getBean(AtomContainerToUniqueNaturalProductService.class);
+
         System.out.println("Computing NP fragments for task "+taskid);
         for(UniqueNaturalProduct np : batchOfNaturalProducts){
+
+
             IAtomContainer acFull = atomContainerToUniqueNaturalProductService.createAtomContainer(np);
             IAtomContainer acSugarFree = removeSugars(acFull);
 
@@ -134,7 +142,9 @@ public class FragmentCalculatorTask implements Runnable {
                 npl_score_noh = npl_score_noh / np.getSugar_free_heavy_atom_number();
                 np.setNpl_noh_score(npl_score_noh);
 
+
                 uniqueNaturalProductRepository.save(np);
+
             }
 
         }

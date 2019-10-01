@@ -113,7 +113,7 @@ public class SimilarityComputationService {
 
 
 
-            List<List<String>>  npPairBatch =  Lists.partition(new ArrayList<String>(hashtableOfNPPairs.keySet()), 1000);
+            List<List<String>>  npPairBatch =  Lists.partition(new ArrayList<String>(hashtableOfNPPairs.keySet()), 10000);
 
             int taskcount = 0;
 

@@ -18,11 +18,13 @@ import org.openscience.cdk.tools.manipulator.AtomContainerManipulator;
 import org.openscience.cdk.tools.manipulator.BondManipulator;
 import org.openscience.cdk.tools.manipulator.MolecularFormulaManipulator;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.stream.Collectors;
 
 @Service
 public class FragmentCalculatorService {
@@ -59,8 +61,10 @@ public class FragmentCalculatorService {
         try{
 
             List<UniqueNaturalProduct> allNP = uniqueNaturalProductRepository.findAll();
+            System.out.println(allNP.size());
 
             ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(nbThreads);
+
 
             List<List<UniqueNaturalProduct>>  nUniqueMoleculesBatch =  Lists.partition(allNP, 10000);
 
@@ -76,7 +80,6 @@ public class FragmentCalculatorService {
                 task.setBatchOfNaturalProducts(oneUNPbatch);
                 taskcount++;
 
-                System.out.println("Task "+taskcount+" created");
                 task.taskid=taskcount;
 
                 Future<?> f = executor.submit(task);
@@ -87,18 +90,13 @@ public class FragmentCalculatorService {
 
                 System.out.println("Task "+taskcount+" executing");
 
-
-
             }
+
 
             executor.shutdown();
             //executor.awaitTermination(210, TimeUnit.SECONDS);
 
-            try {
-                executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
-            } catch (InterruptedException e) {
-                System.out.println("Interrupted exectuion of the fragment calculation! please check consistency of results!");
-            }
+
 
 
 
@@ -124,9 +122,7 @@ public class FragmentCalculatorService {
             allFuturesDone &= future.isDone();
 
         }
-
-
-        System.out.println("Finished parallel computation of Tanimoto");
+        System.out.println("Finished parallel computation of fragments");
         return allFuturesDone;
     }
 

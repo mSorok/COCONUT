@@ -1,6 +1,7 @@
 package de.unijena.cheminf.npopensourcecollector.services;
 
 
+import de.unijena.cheminf.npopensourcecollector.misc.BeanUtil;
 import de.unijena.cheminf.npopensourcecollector.mongocollections.NPSimilarity;
 import de.unijena.cheminf.npopensourcecollector.mongocollections.NPSimilarityRepository;
 import de.unijena.cheminf.npopensourcecollector.mongocollections.UniqueNaturalProduct;
@@ -40,6 +41,10 @@ public class SimilarityComputationTask implements Runnable {
 
     @Override
     public void run() {
+
+        this.npSimilarityRepository = BeanUtil.getBean(NPSimilarityRepository.class);
+        this.atomContainerToUniqueNaturalProductService = BeanUtil.getBean(AtomContainerToUniqueNaturalProductService.class);
+
         Fingerprinter fingerprinter = new Fingerprinter();
         System.out.println("Computing similarities for task "+taskid);
 
