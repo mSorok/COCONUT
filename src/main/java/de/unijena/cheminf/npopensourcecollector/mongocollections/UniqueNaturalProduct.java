@@ -21,21 +21,21 @@ public class UniqueNaturalProduct {
 
     public Integer heavy_atom_number;
 
-    @Indexed(name = "inchi_index")
+    //@Indexed(name = "inchi_index")
     public String inchi;
 
-    @Indexed(name="inchikey_index")
+    //@Indexed(name="inchikey_index")
     public String inchikey;
 
-    @Indexed(name="smiles_index")
+    //@Indexed(name="smiles_index")
     public String smiles;
 
-    @Indexed(name="clean_smiles_index")
+    //@Indexed(name="clean_smiles_index")
     public String clean_smiles;
 
 
 
-    @Indexed(name="molecular_formular_index")
+    //@Indexed(name="molecular_formular_index")
     public String molecular_formula;
 
     public Double molecular_weight;
@@ -49,7 +49,7 @@ public class UniqueNaturalProduct {
 
     public HashSet<String> geoLocation;
 
-    @Indexed(name = "name_index")
+    //@Indexed(name = "name_index")
     public String name;
 
     public HashSet<String> synonyms;

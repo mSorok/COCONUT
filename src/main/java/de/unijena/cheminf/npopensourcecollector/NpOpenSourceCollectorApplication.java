@@ -50,70 +50,96 @@ public class NpOpenSourceCollectorApplication implements CommandLineRunner {
     public void run(String... args) throws Exception {
 
 
-        //cleaning the DB before filling it
-        mongoTemplate.getDb().drop();
 
-        System.out.println("Code version from 1st October 2019");
+
+
+        System.out.println("Code version from 8th October 2019");
 
         if (args.length > 0) {
-            String dataDirectory = args[0];
 
-            boolean canContinue = readerService.directoryContainsMolecularFiles(dataDirectory);
-
-
-            if(canContinue){
-                //insert in mongodb
-
-
-                readerService.readMolecularFilesAndInsertInMongo();
-
-                //unify
-                npUnificationService.doWork();
-
-
-                fragmentReaderService.doWork(0, args[2]);
-                fragmentReaderService.doWork(1, args[3]);
-
-
-                //fragmentCalculatorService.doWork();
-
-                fragmentCalculatorService.doParallelizedWork(200);
-
-                while(!fragmentCalculatorService.processFinished()){
+            if(args[0].equals("recomputeMissing")){
+                fragmentCalculatorService.doWorkRecompute();
+                molecularFeaturesComputationService.doWorkRecompute();
+                updaterService.updateSourceNaturalProductsParallelized(40);
+                while (!updaterService.processFinished()) {
                     System.out.println("I'm waiting");
                     TimeUnit.MINUTES.sleep(1);
                 }
 
-
-                molecularFeaturesComputationService.doWork();
-                updaterService.updateSourceNaturalProducts();
-
-
-                //read and insert synthetic molecules
-                readerService.readSyntheticMoleculesAndInsertInMongo(args[1]); //tsv file
-                molecularFeaturesComputationService.doWorkForSM();
-
-
-
-
+            }
+            else if(args[0].equals("runOnlySimilarity")){
                 //compute similarities between natural products
                 similarityComputationService.generateAllPairs();
                 // //similarityComputationService.computeSimilarities();
-                similarityComputationService.doParallelizedWork(200);
-                while(!similarityComputationService.processFinished()){
+                similarityComputationService.doParallelizedWork(40);
+                while (!similarityComputationService.processFinished()) {
                     System.out.println("I'm waiting");
                     TimeUnit.MINUTES.sleep(1);
                 }
+            }
+            else if(args[0].equals("onlyAddSM")){
+                //read and insert synthetic molecules
+                readerService.readSyntheticMoleculesAndInsertInMongo(args[1]); //tsv file
+                molecularFeaturesComputationService.doWorkForSM();
+            }
+            else { //Filling from scratch
+                //cleaning the DB before filling it
+                mongoTemplate.getDb().drop();
+
+                String dataDirectory = args[0];
+
+                boolean canContinue = readerService.directoryContainsMolecularFiles(dataDirectory);
 
 
+                if (canContinue) {
+                    //insert in mongodb
+
+
+                    readerService.readMolecularFilesAndInsertInMongo();
+
+                    //unify
+                    npUnificationService.doWork();
+
+
+                    fragmentReaderService.doWork(0, args[2]);
+                    fragmentReaderService.doWork(1, args[3]);
+
+
+                    //fragmentCalculatorService.doWork();
+
+                    fragmentCalculatorService.doParallelizedWork(40);
+
+                    while (!fragmentCalculatorService.processFinished()) {
+                        System.out.println("I'm waiting");
+                        TimeUnit.MINUTES.sleep(1);
+                    }
+
+
+                    molecularFeaturesComputationService.doWork();
+                    updaterService.updateSourceNaturalProductsParallelized(40);
+
+
+                    //read and insert synthetic molecules
+                    readerService.readSyntheticMoleculesAndInsertInMongo(args[1]); //tsv file
+                    molecularFeaturesComputationService.doWorkForSM();
+
+
+                    //compute similarities between natural products
+                    similarityComputationService.generateAllPairs();
+                    // //similarityComputationService.computeSimilarities();
+                    similarityComputationService.doParallelizedWork(40);
+                    while (!similarityComputationService.processFinished()) {
+                        System.out.println("I'm waiting");
+                        TimeUnit.MINUTES.sleep(1);
+                    }
+
+
+                } else {
+                    System.out.println("Could not find files with molecules in the provided directory!");
+                    exit(0);
+                }
 
             }
-            else{
-                System.out.println("Could not find files with molecules in the provided directory!");
-                exit(0);
-            }
-
-
 
 
             System.out.println("Normal exit");

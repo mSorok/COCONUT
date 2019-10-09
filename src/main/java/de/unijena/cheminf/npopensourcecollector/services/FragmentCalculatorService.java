@@ -66,7 +66,7 @@ public class FragmentCalculatorService {
             ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(nbThreads);
 
 
-            List<List<UniqueNaturalProduct>>  nUniqueMoleculesBatch =  Lists.partition(allNP, 10000);
+            List<List<UniqueNaturalProduct>>  nUniqueMoleculesBatch =  Lists.partition(allNP, 1000);
 
             int taskcount = 0;
 
@@ -122,18 +122,21 @@ public class FragmentCalculatorService {
             allFuturesDone &= future.isDone();
 
         }
-        System.out.println("Finished parallel computation of fragments");
+        //System.out.println("Finished parallel computation of fragments");
         return allFuturesDone;
     }
 
 
 
-    public void doWork(){
+    public void doWorkRecompute(){
 
-        System.out.println("Start fragmenting natural products");
+        System.out.println("Start fragmenting natural products for uncomputed");
 
 
-        List<UniqueNaturalProduct> allNP = uniqueNaturalProductRepository.findAll();
+        List<UniqueNaturalProduct> allNP = uniqueNaturalProductRepository.findAllByNPLScoreComputed();
+
+        System.out.println("NUMBER OF ALL NP FOUND "+allNP.size());
+
 
         int count=1;
         int total=allNP.size();
@@ -217,6 +220,37 @@ public class FragmentCalculatorService {
 
                 uniqueNaturalProductRepository.save(np);
             }
+            else{
+                //the same but only for molecules with sugar
+                Hashtable<String, Integer> fragmentsWithSugar = generateCountedAtomSignatures(acFull, height);
+                Double npl_score_with_sugar = 0.0;
+
+                //computing the NPL score with the Sugar
+                for (String f : fragmentsWithSugar.keySet()) {
+
+                    Fragment foundFragment = fragmentRepository.findBySignatureAndWithsugar(f, 1);
+
+                    if(foundFragment==null){
+                        //it is a new fragment!
+                        Fragment newFragment = new Fragment();
+                        newFragment.setHeight(height);
+                        newFragment.setWith_sugar(1);
+                        newFragment.setSignature(f);
+                        newFragment.setScorenp(1.0);
+                        foundFragment = fragmentRepository.save(newFragment);
+                    }
+
+                    npl_score_with_sugar = npl_score_with_sugar + (foundFragment.getScorenp() * fragmentsWithSugar.get(f));
+
+                    np.addFragmentWithSugar(f, fragmentsWithSugar.get(f));
+
+                }
+                npl_score_with_sugar = npl_score_with_sugar / np.getTotal_atom_number();
+                np.setNpl_sugar_score(npl_score_with_sugar);
+
+                uniqueNaturalProductRepository.save(np);
+
+            }
             count++;
             if(count%10000==0){
                 System.out.println("Molecules fragmented: "+count+" ("+(double)count/(double)total+"% )");
@@ -232,6 +266,8 @@ public class FragmentCalculatorService {
         Date date = new Date();
         SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
         System.out.println("at: "+formatter.format(date)+"\n");
+
+
     }
 
 
@@ -420,6 +456,11 @@ public class FragmentCalculatorService {
         }
         return numberHeavyAtoms;
     }
+
+
+
+
+
 
 
 

@@ -31,12 +31,14 @@ public class SimilarityComputationService {
     @Autowired
     AtomContainerToUniqueNaturalProductService atomContainerToUniqueNaturalProductService;
 
-    private Set<Set<UniqueNaturalProduct>> npPairs;
+    private Set<Set<String>> npPairs;
 
 
 
     List<Future<?>> futures = new ArrayList<Future<?>>();
 
+
+    /*
 
     public void computeSimilarities(){
         Fingerprinter fingerprinter = new Fingerprinter();
@@ -76,17 +78,19 @@ public class SimilarityComputationService {
         System.out.println("done");
 
     }
-
+*/
 
     public void generateAllPairs(){
         System.out.println("Computing pairs of NPs");
 
         List<UniqueNaturalProduct> allNP = uniqueNaturalProductRepository.findAll();
 
-        Set<UniqueNaturalProduct> npset = new HashSet<>(allNP);
 
+        Set<String> npset = new HashSet<>();
 
-
+        for(UniqueNaturalProduct np: allNP){
+            npset.add(np.inchikey);
+        }
 
         this.npPairs = Sets.combinations( npset, 2);
 
@@ -101,33 +105,38 @@ public class SimilarityComputationService {
 
         try{
 
-            Hashtable<String,List<UniqueNaturalProduct>> hashtableOfNPPairs = new Hashtable<>();
+            Hashtable<Integer,List<String>> hashtableInchikeyPairs = new Hashtable<>();
+            int npcount = 0;
             for(Set spair : npPairs) {
-                List<UniqueNaturalProduct> pair = new ArrayList<UniqueNaturalProduct>(spair);
-                hashtableOfNPPairs.put(pair.toString(), pair);
+                List<String> pairInchikey = new ArrayList<String>(spair);
+                hashtableInchikeyPairs.put(npcount, pairInchikey);
+                npcount++;
 
             }
+
+            System.out.println("created hashtable for np pair partition");
 
 
             ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(numberOfThreads);
 
 
 
-            List<List<String>>  npPairBatch =  Lists.partition(new ArrayList<String>(hashtableOfNPPairs.keySet()), 10000);
+            List<List<Integer>>  npPairBatch =  Lists.partition(new ArrayList<Integer>(hashtableInchikeyPairs.keySet()), 10000);
+
+            System.out.println("created partition");
 
             int taskcount = 0;
 
-            List<Callable<Object>> todo = new ArrayList<Callable<Object>>(npPairBatch.size());
 
             System.out.println("Total number of tasks:" + npPairBatch.size());
 
-            for(List<String> stringNPBatch : npPairBatch){
+            for(List<Integer> intNPBatch : npPairBatch){
                 SimilarityComputationTask task  = new SimilarityComputationTask();
 
-                ArrayList<List<UniqueNaturalProduct>> pairBatch= new ArrayList<>();
+                ArrayList<List<String>> pairBatch= new ArrayList<>();
 
-                for(String s : stringNPBatch){
-                    pairBatch.add(hashtableOfNPPairs.get(s));
+                for(Integer s : intNPBatch){
+                    pairBatch.add(hashtableInchikeyPairs.get(s));
                 }
 
                 task.setNpPairsToCompute(pairBatch);
@@ -140,12 +149,7 @@ public class SimilarityComputationService {
 
                 futures.add(f);
 
-                //executor.execute(task);
-
                 System.out.println("Task "+taskcount+" executing");
-
-
-
 
             }
 

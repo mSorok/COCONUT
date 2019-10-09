@@ -19,4 +19,6 @@ public class SourceNaturalProductRepositoryImpl implements SourceNaturalProductR
     public List<Object> findUniqueInchiKeys() {
         return mongoTemplate.query(SourceNaturalProduct.class).distinct("simpleInchiKey").all()  ;
     }
+
+
 }
