@@ -13,14 +13,12 @@ public class DatabaseTypeChecker {
 
 
         private final String[] africa = {"afrodb", "afrocancer", "afromalariadb", "afrotryp", "conmednp", "etm", "mitishamba", "nanpdb", "p-anapl", "sancdb"};
-        private final String[] china = {"him", "hit", "tcmdb_taiwan", "tcmid", "tipdb"};
-        private final String[] india = {"imppat", "inpacdb"};
+        private final String[] asia = {"him", "hit", "tcmdb_taiwan", "tcmid", "tipdb", "imppat", "inpacdb"};
         private final String[] europe = {"tppt"};
         private final String[] america = {"nubbedb", "uefs", "biofacquim"};
 
         private final HashSet<String> continentAfrica = new HashSet<String>(Arrays.asList(africa));
-        private final HashSet<String> continentIndia = new HashSet<String>(Arrays.asList(india));
-        private final HashSet<String> continentChina = new HashSet<String>(Arrays.asList(china));
+        private final HashSet<String> continentAsia = new HashSet<String>(Arrays.asList(asia));
         private final HashSet<String> continentEurope = new HashSet<String>(Arrays.asList(europe));
         private final HashSet<String> continentAmerica = new HashSet<String>(Arrays.asList(america));
 
@@ -28,11 +26,11 @@ public class DatabaseTypeChecker {
 
         private final String[] plants = {"uefs","tppt","tmdb","tipdb","tcmid", "tcmdb_taiwan","spektraris","sancdb",
                 "respect","p-anapl", "npact","nanpdb","mitishamba","inpacdb","imppat", "hit","him","etm","conmednp",
-                "afrotryp", "afromalariadb","afrocancer","afrodb"};
+                "afrotryp", "afromalariadb","afrocancer","afrodb", "cmaup"};
         private final String[] bacteria = {"streptomedb"};
         private final String[] fungi = {"lichendatabase"};
         private final String[] animals = {};
-        private final String[] marine = {};
+        private final String[] marine = {"swmd"};
         private final String[] mixed = {"nubbedb","npcare","npatlas","npass","analyticon_all_np", "biofacquim"};
 
         private final HashSet<String> taxPlants = new HashSet<String>(Arrays.asList(plants));
@@ -48,17 +46,14 @@ public class DatabaseTypeChecker {
             if(continentAfrica.contains(sourceDB)){
                 return "africa";
             }
-            else if(continentChina.contains(sourceDB)){
-                return "china";
-            }
-            else if(continentIndia.contains(sourceDB)){
-                return "india";
+            else if(continentAsia.contains(sourceDB)){
+                return "asia";
             }
             else if(continentEurope.contains(sourceDB)){
                 return "europe";
             }
             else if(continentAmerica.contains(sourceDB)){
-                return "southamerica";
+                return "america";
             }
             else {
                 return "nogeo";

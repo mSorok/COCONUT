@@ -73,15 +73,25 @@ public class NPUnificationService {
                 //add annotations from SourceNaturalProducts
 
                 //name
-                if(unp.getName() == null && snp.getName() != null){
-                    unp.setName(snp.getName());
+                if((unp.getName() == null || unp.getName() =="") && snp.getName() != null){
+
+                    String name = snp.getName().trim();
+
+                    String [] names = name.split("\\\n");
+
+
+                    unp.setName(names[0]);
+                    if(names.length>1){
+                        for(int i=1; i<names.length;i++){
+                            unp.synonyms.add(names[i]);
+                        }
+                    }
                 }
                 else if( unp.getName() != null && snp.getName() != null){
-                    unp.synonyms.add(snp.getName());
+                    unp.synonyms.add(snp.getName().trim());
                 }
 
                 //synonyms
-
                 if(snp.getSynonyms() != null){
                     unp.synonyms.addAll(snp.getSynonyms());
                 }
@@ -180,11 +190,6 @@ public class NPUnificationService {
             }
         }
         m.setBond_count(bondCount);
-
-
-
-
-
         return(m);
     }
 }
