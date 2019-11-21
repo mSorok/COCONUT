@@ -17,6 +17,9 @@ public class UniqueNaturalProduct {
     @Id
     public String id;
 
+    //@Indexed(name = "coconut_id")
+    public String coconut_id;
+
     public Integer contains_sugar;
 
     public Integer heavy_atom_number;
@@ -32,6 +35,8 @@ public class UniqueNaturalProduct {
 
     //@Indexed(name="clean_smiles_index")
     public String clean_smiles;
+
+    public String sugar_free_smiles;
 
 
 
@@ -691,5 +696,21 @@ public class UniqueNaturalProduct {
 
     public void setSynonyms(HashSet<String> synonyms) {
         this.synonyms = synonyms;
+    }
+
+    public String getCoconut_id() {
+        return coconut_id;
+    }
+
+    public void setCoconut_id(String coconut_id) {
+        this.coconut_id = coconut_id;
+    }
+
+    public String getSugar_free_smiles() {
+        return sugar_free_smiles;
+    }
+
+    public void setSugar_free_smiles(String sugar_free_smiles) {
+        this.sugar_free_smiles = sugar_free_smiles;
     }
 }

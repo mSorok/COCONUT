@@ -15,6 +15,8 @@ import org.openscience.cdk.graph.CycleFinder;
 import org.openscience.cdk.graph.Cycles;
 import org.openscience.cdk.interfaces.*;
 import org.openscience.cdk.signature.AtomSignature;
+import org.openscience.cdk.smiles.SmiFlavor;
+import org.openscience.cdk.smiles.SmilesGenerator;
 import org.openscience.cdk.tools.manipulator.AtomContainerManipulator;
 import org.openscience.cdk.tools.manipulator.BondManipulator;
 import org.openscience.cdk.tools.manipulator.MolecularFormulaManipulator;
@@ -64,6 +66,8 @@ public class FragmentCalculatorTask implements Runnable {
         this.uniqueNaturalProductRepository = BeanUtil.getBean(UniqueNaturalProductRepository.class);
         this.fragmentRepository = BeanUtil.getBean(FragmentRepository.class);
         this.atomContainerToUniqueNaturalProductService = BeanUtil.getBean(AtomContainerToUniqueNaturalProductService.class);
+        SmilesGenerator smilesGenerator = new SmilesGenerator(SmiFlavor.Unique); //Unique - canonical SMILES string, different atom ordering produces the same* SMILES. No isotope or stereochemistry encoded.
+
 
         System.out.println("Computing NP fragments for task "+taskid);
         for(UniqueNaturalProduct np : batchOfNaturalProducts){
@@ -141,6 +145,12 @@ public class FragmentCalculatorTask implements Runnable {
 
                 npl_score_noh = npl_score_noh / np.getSugar_free_heavy_atom_number();
                 np.setNpl_noh_score(npl_score_noh);
+
+                try {
+                    np.setSugar_free_smiles(smilesGenerator.create(acSugarFree));
+                } catch (CDKException e) {
+                    e.printStackTrace();
+                }
 
 
                 uniqueNaturalProductRepository.save(np);

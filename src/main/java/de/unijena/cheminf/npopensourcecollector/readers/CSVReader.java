@@ -105,7 +105,7 @@ public class CSVReader implements Reader {
                 if(item.toLowerCase().contains("inchikey")){
                     indexOfInchikey = header.indexOf(item);
                 }
-                if(item.toLowerCase().contains("kingdom")){
+                if(item.toLowerCase().contains("kingdom") || item.toLowerCase().contains("origin")){
                     indexOfKingdom = header.indexOf(item);
                 }
                 if(item.toLowerCase().contains("genu")){
@@ -120,6 +120,7 @@ public class CSVReader implements Reader {
                 if( item.toLowerCase().contains("code") || item.toLowerCase().contains(this.source) ){
                     indexOfCode = header.indexOf(item);
                 }
+
 
             }
 
@@ -140,7 +141,7 @@ public class CSVReader implements Reader {
 
                     IAtomContainer molecule = null;
 
-                    if(indexOfSMILES != null){
+                    if(indexOfSMILES != null && dataline.size()>=indexOfSMILES+1){
                         molecule = sp.parseSmiles(dataline.get(indexOfSMILES));
 
                         molecule.setProperty("FILE_ORIGIN", file.getName().replace(".csv", ""));
@@ -156,7 +157,7 @@ public class CSVReader implements Reader {
                             molecule.setProperty("ORIGINAL_INCHIKEY", dataline.get(indexOfInchikey));
                         }
 
-                    }else if(indexOfInchi != null){
+                    }else if(indexOfInchi != null && dataline.size()>=indexOfInchi+1){
                         // READING InCHI
                         InChIGeneratorFactory factory = InChIGeneratorFactory.getInstance();
                         InChIToStructure intostruct = factory.getInChIToStructure(dataline.get(indexOfInchi), DefaultChemObjectBuilder.getInstance());
@@ -265,25 +266,27 @@ public class CSVReader implements Reader {
                             sourceNaturalProduct.setOrganismText(new ArrayList<String>());
                             sourceNaturalProduct.organismText.add(taxa);
 
-                            if(indexOfKingdom != null){
+                            if(indexOfKingdom != null && dataline.size()>=indexOfKingdom+1){
                                 sourceNaturalProduct.organismText.add(dataline.get(indexOfKingdom));
                             }
-                            if(indexOfGenus != null){
+                            if(indexOfGenus != null && dataline.size()>=indexOfGenus+1){
                                 sourceNaturalProduct.organismText.add(dataline.get(indexOfGenus));
                             }
-                            if(indexOfSpecies != null){
+                            if(indexOfSpecies != null && dataline.size()>=indexOfSpecies+1){
                                 sourceNaturalProduct.organismText.add(dataline.get(indexOfSpecies));
                             }
 
                             //GEOGRAPHY
                             sourceNaturalProduct.setContinent(databaseTypeChecker.checkContinent(this.source));
-                            if(indexOfGeo != null){
+                            if(indexOfGeo != null && dataline.size()>=indexOfGeo+1){
                                 sourceNaturalProduct.geographicLocation = new ArrayList<>();
                                 sourceNaturalProduct.geographicLocation.add(dataline.get(indexOfGeo));
                             }
 
                             //citation reference and doi
-                            if(indexOfCitation != null || indexOfDOI != null || indexOfReference != null){
+                            if( (indexOfCitation != null && dataline.size()>=indexOfCitation+1) ||
+                                    (indexOfDOI != null  && dataline.size()>=indexOfDOI+1) ||
+                                    (indexOfReference != null && dataline.size()>=indexOfReference+1)){
                                 sourceNaturalProduct.citation = new ArrayList<>();
                                 if(indexOfCitation != null){
                                     sourceNaturalProduct.citation.add(dataline.get(indexOfCitation));

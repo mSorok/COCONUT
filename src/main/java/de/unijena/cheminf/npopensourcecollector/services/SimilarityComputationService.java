@@ -33,6 +33,8 @@ public class SimilarityComputationService {
 
     private Set<Set<String>> npPairs;
 
+    private Hashtable<Integer,List<String>> hashtableInchikeyPairs = new Hashtable<>();
+
 
 
     List<Future<?>> futures = new ArrayList<Future<?>>();
@@ -92,7 +94,19 @@ public class SimilarityComputationService {
             npset.add(np.inchikey);
         }
 
+        allNP=null;
         this.npPairs = Sets.combinations( npset, 2);
+
+        npset=null;
+
+        int npcount = 0;
+        for(Set spair : this.npPairs) {
+            this.hashtableInchikeyPairs.put(npcount, new ArrayList<String>(spair));
+            npcount++;
+
+        }
+
+        System.out.println("created hashtable for np pair partition");
 
         System.out.println("done");
 
@@ -105,16 +119,8 @@ public class SimilarityComputationService {
 
         try{
 
-            Hashtable<Integer,List<String>> hashtableInchikeyPairs = new Hashtable<>();
-            int npcount = 0;
-            for(Set spair : npPairs) {
-                List<String> pairInchikey = new ArrayList<String>(spair);
-                hashtableInchikeyPairs.put(npcount, pairInchikey);
-                npcount++;
 
-            }
 
-            System.out.println("created hashtable for np pair partition");
 
 
             ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(numberOfThreads);

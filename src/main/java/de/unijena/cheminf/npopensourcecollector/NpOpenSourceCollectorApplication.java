@@ -42,6 +42,9 @@ public class NpOpenSourceCollectorApplication implements CommandLineRunner {
     @Autowired
     UpdaterService updaterService;
 
+    @Autowired
+    CreateCNPidService createCNPidService;
+
     public static void main(String[] args) {
         SpringApplication.run(NpOpenSourceCollectorApplication.class, args);
     }
@@ -65,6 +68,12 @@ public class NpOpenSourceCollectorApplication implements CommandLineRunner {
                     System.out.println("I'm waiting");
                     TimeUnit.MINUTES.sleep(1);
                 }
+
+            }
+            else if(args[0].equals("addCNPid")){
+
+                System.out.println("Creating de novo COCONUT IDs");
+                createCNPidService.createDeNovoIDs();
 
             }
             else if(args[0].equals("runOnlySimilarity")){
@@ -117,6 +126,8 @@ public class NpOpenSourceCollectorApplication implements CommandLineRunner {
 
                     molecularFeaturesComputationService.doWork();
                     updaterService.updateSourceNaturalProductsParallelized(40);
+
+                    createCNPidService.createDeNovoIDs();
 
 
                     //read and insert synthetic molecules
