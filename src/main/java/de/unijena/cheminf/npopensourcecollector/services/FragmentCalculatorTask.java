@@ -2,7 +2,6 @@ package de.unijena.cheminf.npopensourcecollector.services;
 
 
 import de.unijena.cheminf.npopensourcecollector.misc.BeanUtil;
-import de.unijena.cheminf.npopensourcecollector.misc.LinearSugars;
 import de.unijena.cheminf.npopensourcecollector.mongocollections.Fragment;
 import de.unijena.cheminf.npopensourcecollector.mongocollections.FragmentRepository;
 import de.unijena.cheminf.npopensourcecollector.mongocollections.UniqueNaturalProduct;
@@ -13,6 +12,7 @@ import org.openscience.cdk.exception.CDKException;
 import org.openscience.cdk.graph.CycleFinder;
 import org.openscience.cdk.graph.Cycles;
 import org.openscience.cdk.interfaces.*;
+import org.openscience.cdk.isomorphism.UniversalIsomorphismTester;
 import org.openscience.cdk.signature.AtomSignature;
 import org.openscience.cdk.smiles.SmiFlavor;
 import org.openscience.cdk.smiles.SmilesGenerator;
@@ -49,9 +49,9 @@ public class FragmentCalculatorTask implements Runnable {
     ElectronDonation model = ElectronDonation.cdk();
     CycleFinder cycles = Cycles.cdkAromaticSet();
     Aromaticity aromaticity = new Aromaticity(model, cycles);
+    UniversalIsomorphismTester universalIsomorphismTester = new UniversalIsomorphismTester();
 
 
-    private LinearSugars linearSugarChains = new LinearSugars();
 
     private final int height = 2;
 
@@ -80,10 +80,20 @@ public class FragmentCalculatorTask implements Runnable {
 
             if(acSugarFree != null) {
 
-                //molecule contains sugar
-                np.setContains_sugar(1);
-                np.setContains_ring_sugars(acSugarFree.getProperty("CONTAINS_RING_SUGAR"));
-                np.setContains_linear_sugars(acSugarFree.getProperty("CONTAINS_LINEAR_SUGAR"));
+                //molecule contains sugar and is not only sugar OR does not contain sugar
+                try {
+                    if(!universalIsomorphismTester.isIsomorph(acSugarFree, acFull)) {
+                        np.setContains_sugar(1);
+                        np.setContains_ring_sugars(acSugarFree.getProperty("CONTAINS_RING_SUGAR"));
+                        np.setContains_linear_sugars(acSugarFree.getProperty("CONTAINS_LINEAR_SUGAR"));
+                    }
+                    else{
+                        //molecule doesn't contain sugar
+                        np.setContains_sugar(0);
+                    }
+                } catch (CDKException e) {
+                    e.printStackTrace();
+                }
 
                 //counting atoms for sugar free molecule
                 np.setSugar_free_total_atom_number(acSugarFree.getAtomCount());
@@ -166,8 +176,8 @@ public class FragmentCalculatorTask implements Runnable {
             else{
                 //molecule is only sugar - need to work only on the sugar version
 
-                //molecule does NOT contains sugar
-                np.setContains_sugar(0);
+                //molecule after sugar removal is null - only sugar
+                np.setContains_sugar(2);
 
                 Hashtable<String, Integer> fragmentsWithSugar = generateCountedAtomSignatures(acFull, height);
 

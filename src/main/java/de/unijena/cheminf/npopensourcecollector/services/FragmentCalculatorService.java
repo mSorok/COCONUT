@@ -1,7 +1,6 @@
 package de.unijena.cheminf.npopensourcecollector.services;
 
 import com.google.common.collect.Lists;
-import de.unijena.cheminf.npopensourcecollector.misc.LinearSugars;
 import de.unijena.cheminf.npopensourcecollector.mongocollections.Fragment;
 import de.unijena.cheminf.npopensourcecollector.mongocollections.FragmentRepository;
 import de.unijena.cheminf.npopensourcecollector.mongocollections.UniqueNaturalProduct;
@@ -9,22 +8,17 @@ import de.unijena.cheminf.npopensourcecollector.mongocollections.UniqueNaturalPr
 import org.openscience.cdk.aromaticity.Aromaticity;
 import org.openscience.cdk.aromaticity.ElectronDonation;
 import org.openscience.cdk.exception.CDKException;
-import org.openscience.cdk.graph.ConnectivityChecker;
 import org.openscience.cdk.graph.CycleFinder;
 import org.openscience.cdk.graph.Cycles;
 import org.openscience.cdk.interfaces.*;
+import org.openscience.cdk.isomorphism.UniversalIsomorphismTester;
 import org.openscience.cdk.signature.AtomSignature;
-import org.openscience.cdk.tools.manipulator.AtomContainerManipulator;
-import org.openscience.cdk.tools.manipulator.BondManipulator;
-import org.openscience.cdk.tools.manipulator.MolecularFormulaManipulator;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.*;
-import java.util.stream.Collectors;
 
 @Service
 public class FragmentCalculatorService {
@@ -45,9 +39,9 @@ public class FragmentCalculatorService {
     ElectronDonation model = ElectronDonation.cdk();
     CycleFinder cycles = Cycles.cdkAromaticSet();
     Aromaticity aromaticity = new Aromaticity(model, cycles);
+    UniversalIsomorphismTester universalIsomorphismTester = new UniversalIsomorphismTester();
 
 
-    private final LinearSugars linearSugarChains = LinearSugars.getInstance();
 
     private final int height = 2;
 
@@ -151,7 +145,23 @@ public class FragmentCalculatorService {
 
             IAtomContainer acSugarFree = sugarRemovalService.removeSugars(acFull);
 
-            if(acSugarFree != null && acSugarFree.getAtomCount()>0) {
+            if(acSugarFree != null) {
+
+                //molecule contains sugar and is not only sugar OR does not contain sugar
+                try {
+                    if(!universalIsomorphismTester.isIsomorph(acSugarFree, acFull)) {
+                        np.setContains_sugar(1);
+                        np.setContains_ring_sugars(acSugarFree.getProperty("CONTAINS_RING_SUGAR"));
+                        np.setContains_linear_sugars(acSugarFree.getProperty("CONTAINS_LINEAR_SUGAR"));
+                    }
+                    else{
+                        //molecule doesn't contain sugar
+                        np.setContains_sugar(0);
+                    }
+                } catch (CDKException e) {
+                    e.printStackTrace();
+                }
+
 
                 //counting atoms for sugar free molecule
                 np.setSugar_free_total_atom_number(acSugarFree.getAtomCount());
@@ -223,8 +233,10 @@ public class FragmentCalculatorService {
 
                 uniqueNaturalProductRepository.save(np);
             }
-            else{
+            else{ //molecule is only sugar
                 //the same but only for molecules with sugar
+                np.setContains_sugar(2);
+
                 Hashtable<String, Integer> fragmentsWithSugar = generateCountedAtomSignatures(acFull, height);
                 Double npl_score_with_sugar = 0.0;
 
