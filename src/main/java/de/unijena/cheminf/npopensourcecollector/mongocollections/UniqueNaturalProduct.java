@@ -38,6 +38,10 @@ public class UniqueNaturalProduct {
 
     public String sugar_free_smiles;
 
+    public Integer contains_ring_sugars;
+
+    public Integer contains_linear_sugars;
+
 
 
     //@Indexed(name="molecular_formular_index")
@@ -712,5 +716,21 @@ public class UniqueNaturalProduct {
 
     public void setSugar_free_smiles(String sugar_free_smiles) {
         this.sugar_free_smiles = sugar_free_smiles;
+    }
+
+    public Integer getContains_ring_sugars() {
+        return contains_ring_sugars;
+    }
+
+    public void setContains_ring_sugars(Integer contains_ring_sugars) {
+        this.contains_ring_sugars = contains_ring_sugars;
+    }
+
+    public Integer getContains_linear_sugars() {
+        return contains_linear_sugars;
+    }
+
+    public void setContains_linear_sugars(Integer contains_linear_sugars) {
+        this.contains_linear_sugars = contains_linear_sugars;
     }
 }

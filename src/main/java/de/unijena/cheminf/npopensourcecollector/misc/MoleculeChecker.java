@@ -38,6 +38,7 @@ public class MoleculeChecker {
 
     public IAtomContainer checkMolecule(IAtomContainer molecule){
 
+
         mcc = BeanUtil.getBean(MoleculeConnectivityChecker.class);
 
         if(!containsStrangeElements(molecule)) {

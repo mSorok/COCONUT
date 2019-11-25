@@ -38,6 +38,9 @@ public class FragmentCalculatorService {
     @Autowired
     AtomContainerToUniqueNaturalProductService atomContainerToUniqueNaturalProductService;
 
+    @Autowired
+    SugarRemovalService sugarRemovalService;
+
 
     ElectronDonation model = ElectronDonation.cdk();
     CycleFinder cycles = Cycles.cdkAromaticSet();
@@ -146,7 +149,7 @@ public class FragmentCalculatorService {
 
             IAtomContainer acFull = atomContainerToUniqueNaturalProductService.createAtomContainer(np);
 
-            IAtomContainer acSugarFree = removeSugars(acFull);
+            IAtomContainer acSugarFree = sugarRemovalService.removeSugars(acFull);
 
             if(acSugarFree != null && acSugarFree.getAtomCount()>0) {
 
@@ -341,7 +344,7 @@ public class FragmentCalculatorService {
 
 
 
-
+/*
 
     private IAtomContainer removeSugars(IAtomContainer molecule){
 
@@ -413,10 +416,7 @@ public class FragmentCalculatorService {
 
         IRingSet connectedRings = sugarRingsSet.getConnectedRings((IRing) possibleSugarRing);
 
-        /*
-         * get bonds to check for bond order of connected atoms in a sugar ring
-         *
-         */
+
         for (IAtom atom : possibleSugarRing.atoms()) {
             bonds.addAll(molecule.getConnectedBondsList(atom));
         }
@@ -424,9 +424,7 @@ public class FragmentCalculatorService {
         if (IBond.Order.SINGLE.equals(BondManipulator.getMaximumBondOrder(bonds))
                 && connectedRings.getAtomContainerCount() == 0) {
 
-            /*
-             * get connected atoms of all atoms in sugar ring to check for glycoside bond
-             */
+
             for (IAtom atom : possibleSugarRing.atoms()) {
                 List<IAtom> connectedAtoms = molecule.getConnectedAtomsList(atom);
                 allConnectedAtoms.addAll(connectedAtoms);
@@ -446,6 +444,7 @@ public class FragmentCalculatorService {
         return shouldRemoveRing;
     }
 
+    */
 
     public Integer computeNumberOfHeavyAtoms(IAtomContainer ac){
         Integer numberHeavyAtoms = 0;

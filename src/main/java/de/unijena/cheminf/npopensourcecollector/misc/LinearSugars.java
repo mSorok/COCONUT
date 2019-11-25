@@ -7,6 +7,7 @@ package de.unijena.cheminf.npopensourcecollector.misc;
 import org.openscience.cdk.exception.CDKException;
 import org.openscience.cdk.exception.InvalidSmilesException;
 import org.openscience.cdk.interfaces.IAtomContainer;
+import org.openscience.cdk.isomorphism.DfPattern;
 import org.openscience.cdk.isomorphism.UniversalIsomorphismTester;
 import org.openscience.cdk.silent.SilentChemObjectBuilder;
 import org.openscience.cdk.smiles.SmilesParser;
@@ -19,22 +20,38 @@ import java.util.List;
  * during sugar curation. The set here is limited to the author's knowledge and more chains can be
  * added.
  *
- * @author kalai
+ * @author kalai, msorok
  */
 public class LinearSugars {
 
     UniversalIsomorphismTester isomorphismTester = null;
 
-    public boolean hasSugarChains(IAtomContainer target, int ringCount) throws CDKException {
-        if (ringCount == 0) {
-            for (IAtomContainer query : sugarChains) {
-                if (isomorphismTester.isSubgraph(target, query)) {
-                    return true;
+    public static List<IAtomContainer> sugarChains;
+
+    public List<DfPattern> patternList;
+
+    public IAtomContainer removeLinearSugars(IAtomContainer target) throws CDKException{
+        IAtomContainer newMolecule = null;
+        try {
+            newMolecule = target.clone();
+
+            for(IAtomContainer sugarChain : sugarChains){
+                if( isomorphismTester.isSubgraph(target, sugarChain)){
+
+                    //remove sugar chain
                 }
             }
+
+        } catch (CloneNotSupportedException e) {
+            return null;
         }
-        return false;
+
+
+        return newMolecule;
+
     }
+
+
 
     public static class LinearSugarsGeneratorHolder {
         private static final LinearSugars INSTANCE = new LinearSugars();
@@ -44,14 +61,13 @@ public class LinearSugars {
         return LinearSugarsGeneratorHolder.INSTANCE;
     }
 
-    private LinearSugars() {
-        isomorphismTester = new UniversalIsomorphismTester();
+    public LinearSugars() {
         sugarChains = getSugarChains();
+        patternList = getSugarPatterns();
     }
 
-    public static List<IAtomContainer> sugarChains;
 
-    private List<IAtomContainer> getSugarChains() {
+    public List<IAtomContainer> getSugarChains() {
 
         List<IAtomContainer> linearSugarChains = new ArrayList<IAtomContainer>();
 
@@ -70,5 +86,16 @@ public class LinearSugars {
             }
         }
         return linearSugarChains;
+    }
+
+
+    public List<DfPattern> getSugarPatterns(){
+        List<DfPattern> patternList = new ArrayList<>();
+        for(IAtomContainer sugarAC : sugarChains){
+            patternList.add(DfPattern.findSubstructure(sugarAC));
+
+        }
+
+        return patternList;
     }
 }
