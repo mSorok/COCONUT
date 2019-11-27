@@ -9,6 +9,7 @@ import de.unijena.cheminf.npopensourcecollector.mongocollections.UniqueNaturalPr
 import org.openscience.cdk.aromaticity.Aromaticity;
 import org.openscience.cdk.aromaticity.ElectronDonation;
 import org.openscience.cdk.exception.CDKException;
+import org.openscience.cdk.fragment.MurckoFragmenter;
 import org.openscience.cdk.graph.CycleFinder;
 import org.openscience.cdk.graph.Cycles;
 import org.openscience.cdk.interfaces.*;
@@ -50,6 +51,7 @@ public class FragmentCalculatorTask implements Runnable {
     CycleFinder cycles = Cycles.cdkAromaticSet();
     Aromaticity aromaticity = new Aromaticity(model, cycles);
     UniversalIsomorphismTester universalIsomorphismTester = new UniversalIsomorphismTester();
+
 
 
 
@@ -209,6 +211,20 @@ public class FragmentCalculatorTask implements Runnable {
 
                 uniqueNaturalProductRepository.save(np);
             }
+
+
+            //Calculate Murko Framework
+
+            try {
+                MurckoFragmenter murckoFragmenter = new MurckoFragmenter(true, 5);
+                murckoFragmenter.generateFragments(acFull);
+                np.setMurko_framework(murckoFragmenter.getFrameworks()[0]);
+                uniqueNaturalProductRepository.save(np);
+
+            } catch (CDKException e) {
+                e.printStackTrace();
+            }
+
 
         }
         Date date = new Date();

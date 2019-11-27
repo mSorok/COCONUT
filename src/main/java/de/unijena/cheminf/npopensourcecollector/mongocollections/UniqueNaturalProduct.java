@@ -93,6 +93,9 @@ public class UniqueNaturalProduct {
     public Hashtable<String, Integer> fragmentsWithSugar;
 
 
+    public String murko_framework;
+
+
 
     //Additional features
 
@@ -732,5 +735,13 @@ public class UniqueNaturalProduct {
 
     public void setContains_linear_sugars(Integer contains_linear_sugars) {
         this.contains_linear_sugars = contains_linear_sugars;
+    }
+
+    public String getMurko_framework() {
+        return murko_framework;
+    }
+
+    public void setMurko_framework(String murko_framework) {
+        this.murko_framework = murko_framework;
     }
 }

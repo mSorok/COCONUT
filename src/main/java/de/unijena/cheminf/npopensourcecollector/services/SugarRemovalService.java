@@ -22,23 +22,25 @@ import org.openscience.cdk.smiles.SmilesGenerator;
 import org.openscience.cdk.smiles.SmilesParser;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Hashtable;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+
+
 
 @Service
 public class SugarRemovalService {
 
 
+
     public List<IAtomContainer> linearSugars;
     public List<IAtomContainer> ringSugars;
     public List<DfPattern> patternListLinearSugars;
-    public List<DfPattern> patternListRingSugars;
-    public Hashtable<DfPattern, IRing> patternToRing;
+
 
     UniversalIsomorphismTester universalIsomorphismTester = new UniversalIsomorphismTester();
     MoleculeConnectivityChecker mcc;
+
+
+
 
 
     public void getSugarChains() {
@@ -84,26 +86,17 @@ public class SugarRemovalService {
     public void getSugarPatterns(){
         getSugarChains();
 
-        patternToRing = new Hashtable<>();
+        //patternToRing = new Hashtable<>();
 
         patternListLinearSugars = new ArrayList<>();
         for(IAtomContainer sugarAC : linearSugars){
             patternListLinearSugars.add(DfPattern.findSubstructure(sugarAC));
         }
-
-        patternListRingSugars = new ArrayList<>();
-        for(IAtomContainer sugarAC : ringSugars){
-            patternListRingSugars.add(DfPattern.findSubstructure(sugarAC));
-            IRingSet ringset = Cycles.sssr(sugarAC).toRingSet();
-            patternToRing.put(DfPattern.findSubstructure(sugarAC), new Ring(sugarAC));
-        }
-    }
-
-
+        
 
 
     public IAtomContainer removeSugars(IAtomContainer molecule){
-        SmilesGenerator smilesGenerator = new SmilesGenerator(SmiFlavor.Unique );
+        //SmilesGenerator smilesGenerator = new SmilesGenerator(SmiFlavor.Unique );
         this.getSugarPatterns();
 
         IAtomContainer newMolecule = null;
@@ -139,7 +132,11 @@ public class SugarRemovalService {
 
                     newMolecule.setProperty("CONTAINS_LINEAR_SUGAR", 1);
                     //remove sugar
-                    Mappings mappings = pattern.matchAll(molecule);
+                    // Mappings mappings = pattern.matchAll(newMolecule);
+
+                    int[][] mappings = pattern.matchAll(newMolecule).uniqueAtoms().toArray();
+                    //Mappings mappings = pattern.matchAll(newMolecule);
+                    //Mappings mappings = pattern.matchAll(molecule);
 
                     for (int[] p : mappings) {
 
@@ -154,11 +151,12 @@ public class SugarRemovalService {
             //select only the biggest part of the molecule
             newMolecule = getBiggestComponent(newMolecule);
 
-        } catch (CloneNotSupportedException e) {
-            System.out.println(e);
+        } catch (CloneNotSupportedException | ConcurrentModificationException | IndexOutOfBoundsException  e) {
+            e.printStackTrace();
             return null;
         } catch (CDKException e) {
             e.printStackTrace();
+            return null;
         }
 
         return newMolecule;
@@ -196,6 +194,9 @@ public class SugarRemovalService {
         molecule.setProperties(properties);
         return molecule;
     }
+
+
+
 
 
 
