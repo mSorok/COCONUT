@@ -123,7 +123,7 @@ public class NpOpenSourceCollectorApplication implements CommandLineRunner {
                         TimeUnit.MINUTES.sleep(1);
                     }
 
-/*
+
                     molecularFeaturesComputationService.doWork();
                     updaterService.updateSourceNaturalProductsParallelized(40);
 
@@ -143,7 +143,6 @@ public class NpOpenSourceCollectorApplication implements CommandLineRunner {
                         System.out.println("I'm waiting");
                         TimeUnit.MINUTES.sleep(1);
                     }
-*/
 
                 } else {
                     System.out.println("Could not find files with molecules in the provided directory!");

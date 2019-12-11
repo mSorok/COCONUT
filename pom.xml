@@ -18,7 +18,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <java.version>1.8</java.version>
-        <cdk.version>2.2</cdk.version>
+        <cdk.version>2.3</cdk.version>
         <guava.version>28.0-jre</guava.version>
         <docker.image.prefix>coconut</docker.image.prefix>
     </properties>

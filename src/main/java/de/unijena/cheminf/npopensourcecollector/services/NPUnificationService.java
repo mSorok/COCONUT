@@ -104,6 +104,9 @@ public class NPUnificationService {
                 if(snp.taxid != null){
                     unp.taxid.addAll(snp.taxid);
                 }
+                if(unp.textTaxa.size()>1 && unp.textTaxa.contains("notax")){
+                    unp.textTaxa.remove("notax");
+                }
 
 
                 //geo
@@ -112,6 +115,9 @@ public class NPUnificationService {
                 }
                 if(snp.getContinent() != null){
                     unp.geoLocation.add(snp.getContinent());
+                }
+                if(unp.geoLocation.size()>1 && unp.geoLocation.contains("nogeo")){
+                    unp.geoLocation.remove("nogeo");
                 }
 
 
@@ -170,7 +176,7 @@ public class NPUnificationService {
 
         m.setNumber_of_nitrogens(mfm.getElementCount(mfm.getMolecularFormula(im), "N"));
 
-        m.setMolecular_weight( acm.getMolecularWeight(im) );
+        m.setMolecular_weight( acm.getMass(im) );
 
 
         // cleaning the NaNs

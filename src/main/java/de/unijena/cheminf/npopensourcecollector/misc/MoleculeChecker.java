@@ -24,12 +24,17 @@ import java.util.Map;
 @Service
 public class MoleculeChecker {
 
+    private static final int MIN_HEAVY_ATOM_COUNT = 6;
+    private static final int MAX_HEAVY_ATOM_COUNT = 200;
+
+
 
     private final String[] check = {"C", "H", "N", "O", "P", "S", "Cl", "F", "As", "Se", "Br", "I", "B", "Na", "Si", "K", "Fe"};
     private final HashSet<String> symbols2Check = new HashSet<String>(Arrays.asList(check));
 
     private final String[] forbiddenInchiKeys = {"OOHPORRAEMMMCX-UHFFFAOYSA-N"};
     private final  HashSet<String> inchis2Check = new HashSet<String>(Arrays.asList(forbiddenInchiKeys));
+
 
 
     MoleculeConnectivityChecker mcc;
@@ -63,7 +68,7 @@ public class MoleculeChecker {
                         nbheavyatoms++;
                     }
                 }
-                if(nbheavyatoms<5 || nbheavyatoms>=200){
+                if(nbheavyatoms<= MIN_HEAVY_ATOM_COUNT || nbheavyatoms>=MAX_HEAVY_ATOM_COUNT){
                     return null;
                 }
             }
