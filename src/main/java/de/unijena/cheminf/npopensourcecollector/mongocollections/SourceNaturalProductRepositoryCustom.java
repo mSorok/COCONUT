@@ -6,4 +6,6 @@ public interface SourceNaturalProductRepositoryCustom {
 
     List<Object> findUniqueInchiKeys();
 
+    List<Object> findUniqueSourceNames();
+
 }

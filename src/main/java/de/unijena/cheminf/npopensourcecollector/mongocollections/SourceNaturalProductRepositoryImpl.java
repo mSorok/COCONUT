@@ -20,5 +20,10 @@ public class SourceNaturalProductRepositoryImpl implements SourceNaturalProductR
         return mongoTemplate.query(SourceNaturalProduct.class).distinct("simpleInchiKey").all()  ;
     }
 
+    @Override
+    public List<Object> findUniqueSourceNames(){
+        return mongoTemplate.query(SourceNaturalProduct.class).distinct("source").all() ;
+    }
+
 
 }

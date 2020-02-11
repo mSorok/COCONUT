@@ -92,6 +92,8 @@ public class UniqueNaturalProduct {
 
     public Hashtable<String, Integer> fragmentsWithSugar;
 
+    public HashSet<String> found_in_databases;
+
 
     public String murko_framework;
 
@@ -743,5 +745,14 @@ public class UniqueNaturalProduct {
 
     public void setMurko_framework(String murko_framework) {
         this.murko_framework = murko_framework;
+    }
+
+
+    public HashSet<String> getFound_in_databases() {
+        return found_in_databases;
+    }
+
+    public void setFound_in_databases(HashSet<String> found_in_databases) {
+        this.found_in_databases = found_in_databases;
     }
 }

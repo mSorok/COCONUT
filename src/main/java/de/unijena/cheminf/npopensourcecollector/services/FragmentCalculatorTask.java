@@ -173,6 +173,7 @@ public class FragmentCalculatorTask implements Runnable {
 
 
                 uniqueNaturalProductRepository.save(np);
+                System.out.println("Saved natural products without sugar and NPL score");
 
             }
             else{
@@ -210,6 +211,7 @@ public class FragmentCalculatorTask implements Runnable {
 
 
                 uniqueNaturalProductRepository.save(np);
+                System.out.println("Saved natural products with only sugars and NPL score");
             }
 
 

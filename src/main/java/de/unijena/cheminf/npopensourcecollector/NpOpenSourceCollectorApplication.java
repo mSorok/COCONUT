@@ -74,6 +74,11 @@ public class NpOpenSourceCollectorApplication implements CommandLineRunner {
 
                 System.out.println("Creating de novo COCONUT IDs");
                 createCNPidService.createDeNovoIDs();
+                updaterService.updateSourceNaturalProductsParallelized(40);
+                while (!updaterService.processFinished()) {
+                    System.out.println("I'm waiting");
+                    TimeUnit.MINUTES.sleep(1);
+                }
 
             }
             else if(args[0].equals("runOnlySimilarity")){
@@ -107,6 +112,7 @@ public class NpOpenSourceCollectorApplication implements CommandLineRunner {
                     readerService.readMolecularFilesAndInsertInMongo();
 
                     //unify
+                    //npUnificationService.fetchSourceNames();
                     npUnificationService.doWork();
 
 
@@ -125,10 +131,8 @@ public class NpOpenSourceCollectorApplication implements CommandLineRunner {
 
 
                     molecularFeaturesComputationService.doWork();
-                    updaterService.updateSourceNaturalProductsParallelized(40);
-
                     createCNPidService.createDeNovoIDs();
-
+                    updaterService.updateSourceNaturalProductsParallelized(40);
 
                     //read and insert synthetic molecules
                     readerService.readSyntheticMoleculesAndInsertInMongo(args[1]); //tsv file

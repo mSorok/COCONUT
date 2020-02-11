@@ -33,9 +33,15 @@ public class NPUnificationService {
     @Autowired
     AtomContainerToUniqueNaturalProductService atomContainerToUniqueNaturalProductService;
 
+    private ArrayList<String> sourceNames;
+
+
+
     public void doWork(){
 
         System.out.println("NP unification InChi-key based");
+
+        fetchSourceNames();
 
         List<Object> uniqueInchiKeys = sourceNaturalProductRepository.findUniqueInchiKeys();
 
@@ -64,6 +70,7 @@ public class NPUnificationService {
             unp.taxid = new HashSet<>();
             unp.geoLocation = new HashSet<>();
             unp.citationDOI = new HashSet<>();
+            unp.found_in_databases = new HashSet<>();
 
             //associate the UniqueNaturalProduct entry to each of the sources
             for(SourceNaturalProduct snp : snpList){
@@ -73,7 +80,14 @@ public class NPUnificationService {
                 //add annotations from SourceNaturalProducts
 
                 //name
-                if((unp.getName() == null || unp.getName() =="") && snp.getName() != null){
+                //checking if name doesn't contain DB name
+                boolean nameIsReal = true;
+                for(String dbname: this.sourceNames){
+                    if(snp.getName().toLowerCase().contains(dbname)){
+                        nameIsReal=false;
+                    }
+                }
+                if(nameIsReal && snp.getName().length()>3 && ((unp.getName() == null || unp.getName() =="") && snp.getName() != null)){
 
                     String name = snp.getName().trim();
 
@@ -124,6 +138,11 @@ public class NPUnificationService {
                 //refs
                 if(snp.getCitation() != null){
                     unp.citationDOI.addAll(snp.getCitation());
+                }
+
+                //database
+                if(snp.getSource() != null){
+                    unp.found_in_databases.add(snp.getSource());
                 }
             }
 
@@ -198,4 +217,19 @@ public class NPUnificationService {
         m.setBond_count(bondCount);
         return(m);
     }
+
+
+    public void fetchSourceNames(){
+        this.sourceNames = new ArrayList<>();
+
+        List<Object> uniqueSourceNames = sourceNaturalProductRepository.findUniqueSourceNames();
+
+        for(Object usn: uniqueSourceNames) {
+
+
+            this.sourceNames.add(usn.toString().toLowerCase());
+        }
+    }
+
+
 }
