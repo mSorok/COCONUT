@@ -1,6 +1,8 @@
 package de.unijena.cheminf.npopensourcecollector.mongocollections;
 
 import org.javatuples.Pair;
+import org.openscience.cdk.fingerprint.IBitFingerprint;
+import org.openscience.cdk.fingerprint.ICountFingerprint;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -9,6 +11,7 @@ import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.Map;
 
 @Document
 public class UniqueNaturalProduct {
@@ -88,18 +91,43 @@ public class UniqueNaturalProduct {
 
     public Integer bond_count;
 
-    public Hashtable<String, Integer> fragments;
-
-    public Hashtable<String, Integer> fragmentsWithSugar;
-
     public HashSet<String> found_in_databases;
 
 
+    // Molecular fragmentation
+
+    public Hashtable<String, Integer> fragments; //those are Signature Fingerprints (similar to circular fingerprints, with Faulon's representation)
+
+    public Hashtable<String, Integer> fragmentsWithSugar;
+
     public String murko_framework;
 
+    public Hashtable<String, Integer> ertlFunctionalFragments;
+
+    //TODO change the data types - mongodb will probably not accept the BitFingerprint as a format - maybe binary data? So rawFingerprint or the bitset?
+
+    public String pubchemFingerprint;
+
+    public String circularFingerprint;
+
+    public String klekotaRothFingerprint;
+
+    public String hybridizationFingerprint;
+
+    public String maccsFingerprint;
+
+    public String shortestPathFingerprint;
+
+    public String substructureFingerprint;
 
 
-    //Additional features
+
+
+    // Symmetry measures
+    //TODO later
+
+
+    // Molecular descriptors
 
     //AlogP
     public Double alogp;
@@ -198,6 +226,7 @@ public class UniqueNaturalProduct {
     public UniqueNaturalProduct(){
         this.fragments = new Hashtable<>();
         this.fragmentsWithSugar = new Hashtable<>();
+        this.ertlFunctionalFragments = new Hashtable<>();
     }
 
 
@@ -754,5 +783,69 @@ public class UniqueNaturalProduct {
 
     public void setFound_in_databases(HashSet<String> found_in_databases) {
         this.found_in_databases = found_in_databases;
+    }
+
+    public Hashtable<String, Integer> getErtlFunctionalFragments() {
+        return ertlFunctionalFragments;
+    }
+
+    public void setErtlFunctionalFragments(Hashtable<String, Integer> ertlFunctionalFragments) {
+        this.ertlFunctionalFragments = ertlFunctionalFragments;
+    }
+
+    public String getPubchemFingerprint() {
+        return pubchemFingerprint;
+    }
+
+    public void setPubchemFingerprint(String pubchemFingerprint) {
+        this.pubchemFingerprint = pubchemFingerprint;
+    }
+
+    public String getCircularFingerprint() {
+        return circularFingerprint;
+    }
+
+    public void setCircularFingerprint(String circularFingerprint) {
+        this.circularFingerprint = circularFingerprint;
+    }
+
+    public String getKlekotaRothFingerprint() {
+        return klekotaRothFingerprint;
+    }
+
+    public void setKlekotaRothFingerprint(String klekotaRothFingerprint) {
+        this.klekotaRothFingerprint = klekotaRothFingerprint;
+    }
+
+    public String getHybridizationFingerprint() {
+        return hybridizationFingerprint;
+    }
+
+    public void setHybridizationFingerprint(String hybridizationFingerprint) {
+        this.hybridizationFingerprint = hybridizationFingerprint;
+    }
+
+    public String getMaccsFingerprint() {
+        return maccsFingerprint;
+    }
+
+    public void setMaccsFingerprint(String maccsFingerprint) {
+        this.maccsFingerprint = maccsFingerprint;
+    }
+
+    public String getShortestPathFingerprint() {
+        return shortestPathFingerprint;
+    }
+
+    public void setShortestPathFingerprint(String shortestPathFingerprint) {
+        this.shortestPathFingerprint = shortestPathFingerprint;
+    }
+
+    public String getSubstructureFingerprint() {
+        return substructureFingerprint;
+    }
+
+    public void setSubstructureFingerprint(String substructureFingerprint) {
+        this.substructureFingerprint = substructureFingerprint;
     }
 }

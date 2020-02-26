@@ -5,24 +5,24 @@ import de.unijena.cheminf.npopensourcecollector.mongocollections.SyntheticMolecu
 import de.unijena.cheminf.npopensourcecollector.mongocollections.UniqueNaturalProduct;
 import de.unijena.cheminf.npopensourcecollector.mongocollections.UniqueNaturalProductRepository;
 import org.openscience.cdk.DefaultChemObjectBuilder;
+import org.openscience.cdk.atomtype.CDKAtomTypeMatcher;
 import org.openscience.cdk.exception.CDKException;
-import org.openscience.cdk.interfaces.IAtom;
-import org.openscience.cdk.interfaces.IAtomContainer;
-import org.openscience.cdk.interfaces.IBond;
-import org.openscience.cdk.interfaces.IChemObjectBuilder;
-import org.openscience.cdk.isomorphism.Pattern;
+import org.openscience.cdk.fingerprint.*;
+import org.openscience.cdk.interfaces.*;
 import org.openscience.cdk.qsar.DescriptorValue;
 import org.openscience.cdk.qsar.descriptors.molecular.*;
 import org.openscience.cdk.qsar.result.DoubleArrayResult;
 import org.openscience.cdk.qsar.result.DoubleResult;
 import org.openscience.cdk.qsar.result.IntegerResult;
+import org.openscience.cdk.silent.SilentChemObjectBuilder;
 import org.openscience.cdk.smiles.SmiFlavor;
 import org.openscience.cdk.smiles.SmilesGenerator;
+import org.openscience.cdk.tools.CDKHydrogenAdder;
 import org.openscience.cdk.tools.manipulator.AtomContainerManipulator;
+import org.openscience.cdk.tools.manipulator.AtomTypeManipulator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,6 +43,20 @@ public class MolecularFeaturesComputationService {
     @Autowired
     AtomContainerToSyntheticMoleculeService atomContainerToSyntheticMoleculeService;
 
+    PubchemFingerprinter pubchemFingerprinter = new PubchemFingerprinter( SilentChemObjectBuilder.getInstance() );
+
+    CircularFingerprinter circularFingerprinter = new CircularFingerprinter(CircularFingerprinter.CLASS_ECFP4);
+
+    KlekotaRothFingerprinter klekotaRothFingerprinter = new KlekotaRothFingerprinter();
+
+    HybridizationFingerprinter hybridizationFingerprinter = new HybridizationFingerprinter();
+
+    MACCSFingerprinter maccsFingerprinter = new MACCSFingerprinter();
+
+    ShortestPathFingerprinter shortestPathFingerprinter = new ShortestPathFingerprinter();
+
+    SubstructureFingerprinter substructureFingerprinter = new SubstructureFingerprinter();
+
 
 
 
@@ -54,6 +68,7 @@ public class MolecularFeaturesComputationService {
         for(UniqueNaturalProduct np : allNP){
 
             np = computeFeatures(np);
+            np = computeFingerprints(np);
 
             uniqueNaturalProductRepository.save(np);
         }
@@ -71,12 +86,60 @@ public class MolecularFeaturesComputationService {
         for(UniqueNaturalProduct np : allNP){
 
             np = computeFeatures(np);
+            np = computeFingerprints(np);
 
             uniqueNaturalProductRepository.save(np);
         }
+
+
+
         System.out.println("done");
+    }
 
 
+    public UniqueNaturalProduct computeFingerprints(UniqueNaturalProduct np){
+
+
+
+        IAtomContainer ac = atomContainerToUniqueNaturalProductService.createAtomContainer(np);
+
+        // Addition of implicit hydrogens & atom typer
+        CDKAtomTypeMatcher matcher = CDKAtomTypeMatcher.getInstance(ac.getBuilder());
+        CDKHydrogenAdder adder = CDKHydrogenAdder.getInstance(ac.getBuilder() );
+        for (int j = 0; j < ac.getAtomCount(); j++) {
+            IAtom atom = ac.getAtom(j);
+            IAtomType type = null;
+            try {
+                type = matcher.findMatchingAtomType(ac, atom);
+                AtomTypeManipulator.configure(atom, type);
+            } catch (CDKException e) {
+                e.printStackTrace();
+            }
+
+        }
+
+        try {
+            adder.addImplicitHydrogens(ac);
+        } catch (CDKException e) {
+            e.printStackTrace();
+        }
+        AtomContainerManipulator.convertImplicitToExplicitHydrogens(ac);
+        AtomContainerManipulator.removeNonChiralHydrogens(ac);
+
+        try {
+
+            np.setPubchemFingerprint(pubchemFingerprinter.getBitFingerprint(ac).asBitSet().toString());
+            np.setCircularFingerprint(circularFingerprinter.getBitFingerprint(ac).asBitSet().toString());
+            np.setKlekotaRothFingerprint(klekotaRothFingerprinter.getBitFingerprint(ac).asBitSet().toString());
+            np.setHybridizationFingerprint(hybridizationFingerprinter.getBitFingerprint(ac).asBitSet().toString());
+            np.setMaccsFingerprint(maccsFingerprinter.getBitFingerprint(ac).asBitSet().toString());
+            np.setShortestPathFingerprint(shortestPathFingerprinter.getBitFingerprint(ac).asBitSet().toString());
+            np.setSubstructureFingerprint(substructureFingerprinter.getBitFingerprint(ac).asBitSet().toString());
+
+        } catch (CDKException | UnsupportedOperationException e) {
+            e.printStackTrace();
+        }
+        return np;
     }
 
 
@@ -86,10 +149,6 @@ public class MolecularFeaturesComputationService {
         System.out.println("Calculating additional features for synthetic molecules");
 
         List<SyntheticMolecule> allSM = syntheticMoleculeRepository.findAll();
-
-
-
-
 
         //Constructors for descriptors
         IChemObjectBuilder builder = DefaultChemObjectBuilder.getInstance();

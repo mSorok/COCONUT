@@ -118,11 +118,6 @@ public class SimilarityComputationService {
         System.out.println("Start parallel computation of Tanimoto");
 
         try{
-
-
-
-
-
             ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(numberOfThreads);
 
 

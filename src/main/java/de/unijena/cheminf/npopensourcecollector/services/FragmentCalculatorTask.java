@@ -94,6 +94,7 @@ public class FragmentCalculatorTask implements Runnable {
                         np.setContains_sugar(0);
                     }
                 } catch (CDKException e) {
+                    System.out.println("Failed detecting isomorphism between molecules with and without sugar");
                     e.printStackTrace();
                 }
 
@@ -105,6 +106,7 @@ public class FragmentCalculatorTask implements Runnable {
                 //fragmenting the 2 versions of the molecule
                 Hashtable<String, Integer> fragmentsWithSugar = generateCountedAtomSignatures(acFull, height);
                 Hashtable<String, Integer> fragmentsWithoutSugar = generateCountedAtomSignatures(acSugarFree, height);
+
 
                 Double npl_score = 0.0;
                 Double npl_score_with_sugar = 0.0;
@@ -165,6 +167,7 @@ public class FragmentCalculatorTask implements Runnable {
                 npl_score_noh = npl_score_noh / np.getSugar_free_heavy_atom_number();
                 np.setNpl_noh_score(npl_score_noh);
 
+
                 try {
                     np.setSugar_free_smiles(smilesGenerator.create(acSugarFree));
                 } catch (CDKException e) {
@@ -173,7 +176,7 @@ public class FragmentCalculatorTask implements Runnable {
 
 
                 uniqueNaturalProductRepository.save(np);
-                System.out.println("Saved natural products without sugar and NPL score");
+                //System.out.println("Saved natural products without sugar and NPL score");
 
             }
             else{

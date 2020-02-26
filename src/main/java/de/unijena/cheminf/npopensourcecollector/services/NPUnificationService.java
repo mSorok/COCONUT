@@ -5,10 +5,12 @@ import de.unijena.cheminf.npopensourcecollector.mongocollections.SourceNaturalPr
 import de.unijena.cheminf.npopensourcecollector.mongocollections.UniqueNaturalProduct;
 import de.unijena.cheminf.npopensourcecollector.mongocollections.UniqueNaturalProductRepository;
 import org.openscience.cdk.exception.CDKException;
+import org.openscience.cdk.interfaces.IAtom;
 import org.openscience.cdk.interfaces.IAtomContainer;
 import org.openscience.cdk.interfaces.IBond;
 import org.openscience.cdk.interfaces.IRingSet;
 import org.openscience.cdk.ringsearch.AllRingsFinder;
+import org.openscience.cdk.smarts.Smarts;
 import org.openscience.cdk.smiles.SmiFlavor;
 import org.openscience.cdk.smiles.SmilesGenerator;
 import org.openscience.cdk.tools.manipulator.AtomContainerManipulator;
@@ -41,9 +43,12 @@ public class NPUnificationService {
 
         System.out.println("NP unification InChi-key based");
 
-        fetchSourceNames();
+        sourceNames = this.fetchSourceNames();
+
+        System.out.println("SOURCES  "+sourceNames);
 
         List<Object> uniqueInchiKeys = sourceNaturalProductRepository.findUniqueInchiKeys();
+        System.out.println(uniqueInchiKeys.size());
 
         for(Object oinchikey: uniqueInchiKeys){
 
@@ -81,25 +86,30 @@ public class NPUnificationService {
 
                 //name
                 //checking if name doesn't contain DB name
-                boolean nameIsReal = true;
+               boolean nameIsReal = true;
                 for(String dbname: this.sourceNames){
-                    if(snp.getName().toLowerCase().contains(dbname)){
+                    if(snp.getName() != null && snp.getName().toLowerCase().contains(dbname)){
                         nameIsReal=false;
                     }
                 }
-                if(nameIsReal && snp.getName().length()>3 && ((unp.getName() == null || unp.getName() =="") && snp.getName() != null)){
-
-                    String name = snp.getName().trim();
-
-                    String [] names = name.split("\\\n");
 
 
-                    unp.setName(names[0]);
-                    if(names.length>1){
-                        for(int i=1; i<names.length;i++){
-                            unp.synonyms.add(names[i]);
+                if(nameIsReal && snp.getName() != null && ((unp.getName() == null || unp.getName() =="") &&  snp.getName().length()>3)){
+
+
+                        String name = snp.getName().trim();
+
+                        String[] names = name.split("\\\n");
+
+
+                        unp.setName(names[0]);
+                        if (names.length > 1) {
+                            for (int i = 1; i < names.length; i++) {
+                                unp.synonyms.add(names[i]);
+                            }
                         }
-                    }
+
+
                 }
                 else if( unp.getName() != null && snp.getName() != null){
                     unp.synonyms.add(snp.getName().trim());
@@ -176,7 +186,7 @@ public class NPUnificationService {
 
         // count rings
         try {
-            IRingSet rs = arf.findAllRings(im, 15);
+            IRingSet rs = arf.findAllRings(im, 20);
 
             m.setNumber_of_rings(rs.getAtomContainerCount());
 
@@ -215,20 +225,22 @@ public class NPUnificationService {
             }
         }
         m.setBond_count(bondCount);
+
+
+
+
         return(m);
     }
 
 
-    public void fetchSourceNames(){
-        this.sourceNames = new ArrayList<>();
-
+    public ArrayList fetchSourceNames(){
         List<Object> uniqueSourceNames = sourceNaturalProductRepository.findUniqueSourceNames();
+        ArrayList<String> tmpArray = new ArrayList<>();
 
         for(Object usn: uniqueSourceNames) {
-
-
-            this.sourceNames.add(usn.toString().toLowerCase());
+            tmpArray.add(usn.toString().toLowerCase());
         }
+        return tmpArray;
     }
 
 

@@ -25,7 +25,7 @@ public class DatabaseTypeChecker {
 
 
         private final String[] plants = {"uefs","tppt","tmdb","tipdb","tcmid", "tcmdb_taiwan","spektraris","sancdb",
-                "respect","p-anapl", "npact","nanpdb","mitishamba","inpacdb","imppat", "hit","him","etm","conmednp",
+                "respect","p-anapl", "npact","nanpdb","mitishamba","inpacdb","imppat", "hitdb","himdb","etmdb","conmednp",
                 "afrotryp", "afromalariadb","afrocancer","afrodb", "cmaup"};
         private final String[] bacteria = {"streptomedb"};
         private final String[] fungi = {"lichendatabase"};
