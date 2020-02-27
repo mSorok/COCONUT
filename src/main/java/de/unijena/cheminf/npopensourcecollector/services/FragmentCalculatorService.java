@@ -105,11 +105,6 @@ public class FragmentCalculatorService {
         }
 
 
-        System.out.println("Done fragmenting natural products");
-        Date date = new Date();
-        SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
-        System.out.println("at: "+formatter.format(date)+"\n");
-
     }
 
 

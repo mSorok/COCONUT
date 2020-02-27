@@ -24,8 +24,8 @@ import java.util.Map;
 @Service
 public class MoleculeChecker {
 
-    private static final int MIN_HEAVY_ATOM_COUNT = 6;
-    private static final int MAX_HEAVY_ATOM_COUNT = 200;
+    private static final int MIN_HEAVY_ATOM_COUNT = 5;
+    private static final int MAX_HEAVY_ATOM_COUNT = 210;
 
 
 

@@ -234,7 +234,7 @@ public class SugarRemovalService {
         Map properties = molecule.getProperties();
         mcc = BeanUtil.getBean(MoleculeConnectivityChecker.class);
         List<IAtomContainer> listAC = mcc.checkConnectivity(molecule);
-        if( listAC.size()>=1 ){
+        if(listAC != null && listAC.size()>=1 ){
             IAtomContainer biggestComponent = listAC.get(0);
             for(IAtomContainer partac : listAC){
                 if(partac.getAtomCount()>biggestComponent.getAtomCount()){
@@ -249,7 +249,7 @@ public class SugarRemovalService {
                     nbheavyatoms++;
                 }
             }
-            if(nbheavyatoms<=6){
+            if(nbheavyatoms<5){
                 return null;
             }
         }

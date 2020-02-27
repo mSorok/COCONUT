@@ -10,6 +10,8 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
 import static java.lang.System.exit;
@@ -129,7 +131,12 @@ public class NpOpenSourceCollectorApplication implements CommandLineRunner {
                         TimeUnit.MINUTES.sleep(1);
                     }
 
+                    System.out.println("Done fragmenting natural products");
+                    SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
+                    System.out.println("at: "+formatter.format(new Date())+"\n");
 
+
+                    // Compute additional features
                     molecularFeaturesComputationService.doWork();
                     createCNPidService.createDeNovoIDs();
                     updaterService.updateSourceNaturalProductsParallelized(40);

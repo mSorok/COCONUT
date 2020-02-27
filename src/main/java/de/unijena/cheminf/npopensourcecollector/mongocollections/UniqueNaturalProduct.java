@@ -104,7 +104,6 @@ public class UniqueNaturalProduct {
 
     public Hashtable<String, Integer> ertlFunctionalFragments;
 
-    //TODO change the data types - mongodb will probably not accept the BitFingerprint as a format - maybe binary data? So rawFingerprint or the bitset?
 
     public String pubchemFingerprint;
 

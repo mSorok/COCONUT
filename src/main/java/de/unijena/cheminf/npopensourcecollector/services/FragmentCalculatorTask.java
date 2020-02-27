@@ -75,6 +75,10 @@ public class FragmentCalculatorTask implements Runnable {
         System.out.println("Computing NP fragments for task "+taskid);
         for(UniqueNaturalProduct np : batchOfNaturalProducts){
 
+            Double npl_score = 0.0;
+            Double npl_score_with_sugar = 0.0;
+            Double npl_score_noh = 0.0;
+
 
             IAtomContainer acFull = atomContainerToUniqueNaturalProductService.createAtomContainer(np);
 
@@ -108,11 +112,6 @@ public class FragmentCalculatorTask implements Runnable {
                 Hashtable<String, Integer> fragmentsWithoutSugar = generateCountedAtomSignatures(acSugarFree, height);
 
 
-                Double npl_score = 0.0;
-                Double npl_score_with_sugar = 0.0;
-                Double npl_score_noh = 0.0;
-
-
 
                 //computing the NPL score with the Sugar
                 for (String f : fragmentsWithSugar.keySet()) {
@@ -126,7 +125,11 @@ public class FragmentCalculatorTask implements Runnable {
                         newFragment.setWith_sugar(1);
                         newFragment.setSignature(f);
                         newFragment.setScorenp(1.0);
+                        newFragment.presentInMolecules.add(np);
                         foundFragment = fragmentRepository.save(newFragment);
+                    }
+                    else{
+                        foundFragment.presentInMolecules.add(np);
                     }
 
                     npl_score_with_sugar = npl_score_with_sugar + (foundFragment.getScorenp() * fragmentsWithSugar.get(f));
@@ -148,7 +151,11 @@ public class FragmentCalculatorTask implements Runnable {
                         newFragment.setWith_sugar(0);
                         newFragment.setSignature(f);
                         newFragment.setScorenp(1.0);
+                        newFragment.presentInMolecules.add(np);
                         foundFragment = fragmentRepository.save(newFragment);
+                    }
+                    else{
+                        foundFragment.presentInMolecules.add(np);
                     }
 
                     npl_score = npl_score + (foundFragment.getScorenp() * fragmentsWithoutSugar.get(f));
@@ -176,7 +183,7 @@ public class FragmentCalculatorTask implements Runnable {
 
 
                 uniqueNaturalProductRepository.save(np);
-                //System.out.println("Saved natural products without sugar and NPL score");
+                System.out.println("Saved natural products without sugar and NPL score");
 
             }
             else{
@@ -187,7 +194,6 @@ public class FragmentCalculatorTask implements Runnable {
 
                 Hashtable<String, Integer> fragmentsWithSugar = generateCountedAtomSignatures(acFull, height);
 
-                Double npl_score_with_sugar = 0.0;
 
                 //computing the NPL score with the Sugar
                 for (String f : fragmentsWithSugar.keySet()) {
@@ -201,6 +207,7 @@ public class FragmentCalculatorTask implements Runnable {
                         newFragment.setWith_sugar(1);
                         newFragment.setSignature(f);
                         newFragment.setScorenp(1.0);
+                        newFragment.presentInMolecules.add(np);
                         foundFragment = fragmentRepository.save(newFragment);
                     }
 
@@ -214,6 +221,7 @@ public class FragmentCalculatorTask implements Runnable {
 
 
                 uniqueNaturalProductRepository.save(np);
+
                 System.out.println("Saved natural products with only sugars and NPL score");
             }
 
