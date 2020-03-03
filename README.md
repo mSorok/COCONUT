@@ -1,6 +1,7 @@
 # Compiler for the COlleCtion of Open NatUral producTs (COCONUT)
 
 This compiles is designed to read molecules from various file types (SMILES, SDF, MOL, csv, tsv), check them for errors and connectivity, compute a large number of molecular parameters and properties, and store everything in a Mongo database.
+Unless you want to modify the code, we recomment using the compiled JAR that can be downloaded here: https://zenodo.org/record/3695455 
 
 #### System pre-requisites:
 
@@ -40,7 +41,7 @@ db.fragment.createIndex({signature:1, withsugar:-1})
 
 ````bash
 COCONUT
-├── coconut-0.0.1-SNAPSHOT.jar # the compiled jar. We provide is as apart of the curent repository
+├── coconut-0.0.1-SNAPSHOT.jar # the compiled jar. It can be downloaded from ZENODO: https://zenodo.org/record/3695455
 ├── data # here go the files with NP molecular structures
 ├── fragments
 │   ├── fragment_without_sugar.txt
