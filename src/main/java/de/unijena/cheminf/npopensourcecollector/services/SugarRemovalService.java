@@ -89,7 +89,7 @@ public class SugarRemovalService {
 
     public IAtomContainer removeSugars(IAtomContainer molecule){
         //SmilesGenerator smilesGenerator = new SmilesGenerator(SmiFlavor.Unique );
-        this.getSugarPatterns();
+        //this.getSugarPatterns();
 
         IAtomContainer newMolecule = null;
         try {
@@ -139,6 +139,7 @@ public class SugarRemovalService {
             //removing linear sugars
             boolean containsLinearSugar = false;
             for(DfPattern pattern : patternListLinearSugars){
+
                 //if (pattern.matches(molecule)) {
                 //boolean patternPartOfARing = false;
 

@@ -47,6 +47,8 @@ public class NpOpenSourceCollectorApplication implements CommandLineRunner {
     @Autowired
     CreateCNPidService createCNPidService;
 
+
+
     public static void main(String[] args) {
         SpringApplication.run(NpOpenSourceCollectorApplication.class, args);
     }
@@ -126,10 +128,7 @@ public class NpOpenSourceCollectorApplication implements CommandLineRunner {
 
                     fragmentCalculatorService.doParallelizedWork(40);
 
-                    while (!fragmentCalculatorService.processFinished()) {
-                        System.out.println("I'm waiting");
-                        TimeUnit.MINUTES.sleep(1);
-                    }
+
 
                     System.out.println("Done fragmenting natural products");
                     SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");

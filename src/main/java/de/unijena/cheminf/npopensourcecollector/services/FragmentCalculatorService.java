@@ -15,6 +15,7 @@ import org.openscience.cdk.interfaces.*;
 import org.openscience.cdk.isomorphism.UniversalIsomorphismTester;
 import org.openscience.cdk.signature.AtomSignature;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 
 import java.text.SimpleDateFormat;
@@ -58,12 +59,14 @@ public class FragmentCalculatorService {
     public void doParallelizedWork(int nbThreads){
         System.out.println("Start parallel fragmentation of natural products");
 
+        sugarRemovalService.getSugarPatterns();
+
         try{
 
             List<UniqueNaturalProduct> allNP = uniqueNaturalProductRepository.findAll();
             System.out.println(allNP.size());
 
-            ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(nbThreads);
+            ExecutorService taskExecutor = Executors.newFixedThreadPool(nbThreads);
 
 
             List<List<UniqueNaturalProduct>>  nUniqueMoleculesBatch =  Lists.partition(allNP, 1000);
@@ -82,24 +85,16 @@ public class FragmentCalculatorService {
 
                 task.taskid=taskcount;
 
-                Future<?> f = executor.submit(task);
-
-                futures.add(f);
-
-                //executor.execute(task);
-
+                taskExecutor.execute(task);
                 System.out.println("Task "+taskcount+" executing");
 
             }
-
-
-            executor.shutdown();
-            //executor.awaitTermination(210, TimeUnit.SECONDS);
-
-
-
-
-
+            taskExecutor.shutdown();
+            try {
+                taskExecutor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -107,7 +102,7 @@ public class FragmentCalculatorService {
 
     }
 
-
+/*
     public boolean processFinished(){
 
         boolean allFuturesDone = true;
@@ -121,11 +116,13 @@ public class FragmentCalculatorService {
         return allFuturesDone;
     }
 
-
+*/
 
     public void doWorkRecompute(){
 
         System.out.println("Start fragmenting natural products for uncomputed");
+
+        sugarRemovalService.getSugarPatterns();
 
 
         List<UniqueNaturalProduct> allNP = uniqueNaturalProductRepository.findAllByNPLScoreComputed();

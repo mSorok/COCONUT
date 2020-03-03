@@ -128,18 +128,23 @@ public class MolecularFeaturesComputationService {
 
         try {
 
-            np.setPubchemFingerprint(pubchemFingerprinter.getBitFingerprint(ac).asBitSet().toString());
-            np.setCircularFingerprint(circularFingerprinter.getBitFingerprint(ac).asBitSet().toString());
-            np.setKlekotaRothFingerprint(klekotaRothFingerprinter.getBitFingerprint(ac).asBitSet().toString());
-            np.setHybridizationFingerprint(hybridizationFingerprinter.getBitFingerprint(ac).asBitSet().toString());
-            np.setMaccsFingerprint(maccsFingerprinter.getBitFingerprint(ac).asBitSet().toString());
-            np.setShortestPathFingerprint(shortestPathFingerprinter.getBitFingerprint(ac).asBitSet().toString());
-            np.setSubstructureFingerprint(substructureFingerprinter.getBitFingerprint(ac).asBitSet().toString());
+            np.setPubchemFingerprint(pubchemFingerprinter.getBitFingerprint(ac).getSetbits().toString());
+            np.setCircularFingerprint(circularFingerprinter.getBitFingerprint(ac).getSetbits().toString());
+            np.setKlekotaRothFingerprint(klekotaRothFingerprinter.getBitFingerprint(ac).getSetbits().toString());
+            np.setHybridizationFingerprint(hybridizationFingerprinter.getBitFingerprint(ac).getSetbits().toString());
+            np.setMaccsFingerprint(maccsFingerprinter.getBitFingerprint(ac).getSetbits().toString());
+            np.setShortestPathFingerprint(shortestPathFingerprinter.getBitFingerprint(ac).getSetbits().toString());
+            np.setSubstructureFingerprint(substructureFingerprinter.getBitFingerprint(ac).getSetbits().toString());
 
         } catch (CDKException | UnsupportedOperationException e) {
             e.printStackTrace();
         }
         return np;
+    }
+
+
+    public void predictStereochemistry(){
+        //TODO
     }
 
 

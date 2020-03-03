@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.function.IntBinaryOperator;
 
@@ -76,6 +77,7 @@ public class NPUnificationService {
             unp.geoLocation = new HashSet<>();
             unp.citationDOI = new HashSet<>();
             unp.found_in_databases = new HashSet<>();
+            unp.absolute_smiles = new Hashtable<>();
 
             //associate the UniqueNaturalProduct entry to each of the sources
             for(SourceNaturalProduct snp : snpList){
@@ -154,6 +156,29 @@ public class NPUnificationService {
                 if(snp.getSource() != null){
                     unp.found_in_databases.add(snp.getSource());
                 }
+
+                //Absolute smiles (with dtereochemistry)
+                if(snp.getAbsoluteSmiles() != null) {
+                    if (unp.absolute_smiles.containsKey(snp.getAbsoluteSmiles())) {
+                        unp.absolute_smiles.get(snp.getAbsoluteSmiles()).add(snp.getSource());
+
+                    } else {
+                        ArrayList newSourceList = new ArrayList();
+                        newSourceList.add(snp.getSource());
+                        unp.absolute_smiles.put(snp.getAbsoluteSmiles(), newSourceList);
+                    }
+                }
+                else{
+                    if(unp.absolute_smiles.containsKey("nostereo")) {
+                        unp.absolute_smiles.get("nostereo").add(snp.getSource());
+                    }
+                    else{
+                        ArrayList newSourceList = new ArrayList();
+                        newSourceList.add(snp.getSource());
+                        unp.absolute_smiles.put("nostereo", newSourceList);
+                    }
+                }
+
             }
 
             unp = uniqueNaturalProductRepository.save(unp);

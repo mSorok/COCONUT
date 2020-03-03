@@ -41,6 +41,9 @@ public class UniqueNaturalProduct {
 
     public String sugar_free_smiles;
 
+
+    public Hashtable<String, ArrayList<String>> absolute_smiles;
+
     public Integer contains_ring_sugars;
 
     public Integer contains_linear_sugars;
@@ -846,5 +849,13 @@ public class UniqueNaturalProduct {
 
     public void setSubstructureFingerprint(String substructureFingerprint) {
         this.substructureFingerprint = substructureFingerprint;
+    }
+
+    public Hashtable<String, ArrayList<String>> getAbsolute_smiles() {
+        return absolute_smiles;
+    }
+
+    public void setAbsolute_smiles(Hashtable<String, ArrayList<String>> absolute_smiles) {
+        this.absolute_smiles = absolute_smiles;
     }
 }

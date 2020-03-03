@@ -65,6 +65,8 @@ public class SDFReader implements Reader{
     public void readFile(File file) {
 
         SmilesGenerator smilesGenerator = new SmilesGenerator(SmiFlavor.Unique); //Unique - canonical SMILES string, different atom ordering produces the same* SMILES. No isotope or stereochemistry encoded.
+        SmilesGenerator absoluteSmilesGenerator = new SmilesGenerator(SmiFlavor.Absolute );
+
 
         this.file = file;
         int count = 1;
@@ -133,9 +135,13 @@ public class SDFReader implements Reader{
 
                     molecule = tmpMolecule;
 
+                    try {
 
-                    if(!foundOriginalSmiles) {
-                        molecule.setProperty("ORIGINAL_SMILES", smilesGenerator.create(molecule));
+                        if (!foundOriginalSmiles) {
+                            molecule.setProperty("ORIGINAL_SMILES", smilesGenerator.create(molecule));
+                        }
+                    }catch (CDKException e){
+                        e.printStackTrace();
                     }
 
 
@@ -182,7 +188,12 @@ public class SDFReader implements Reader{
                         }
 
 
-                        molecule.setProperty("SIMPLE_SMILES", smilesGenerator.create(molecule));
+                        String simpleSmiles = smilesGenerator.create(molecule);
+                        String absoluteSmiles = absoluteSmilesGenerator.create(molecule);
+                        molecule.setProperty("SIMPLE_SMILES", simpleSmiles);
+                        if(!absoluteSmiles.equals(simpleSmiles)) {
+                            molecule.setProperty("ABSOLUTE_SMILES", absoluteSmiles);
+                        }
 
 
                         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd");

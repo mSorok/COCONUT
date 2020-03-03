@@ -54,6 +54,7 @@ public class InChiReader  implements Reader {
     public void readFile(File file) {
 
         SmilesGenerator smilesGenerator = new SmilesGenerator(SmiFlavor.Unique );
+        SmilesGenerator absoluteSmilesGenerator = new SmilesGenerator(SmiFlavor.Absolute );
 
 
         this.file = file;
@@ -147,7 +148,12 @@ public class InChiReader  implements Reader {
 
                             }
 
-                            molecule.setProperty("SIMPLE_SMILES", smilesGenerator.create(molecule));
+                            String simpleSmiles = smilesGenerator.create(molecule);
+                            String absoluteSmiles = absoluteSmilesGenerator.create(molecule);
+                            molecule.setProperty("SIMPLE_SMILES", simpleSmiles);
+                            if(!absoluteSmiles.equals(simpleSmiles)) {
+                                molecule.setProperty("ABSOLUTE_SMILES", absoluteSmiles);
+                            }
 
 
                             DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd");

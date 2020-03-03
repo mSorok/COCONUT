@@ -20,6 +20,8 @@ public class SourceNaturalProduct {
 
     public String simpleSmiles;
 
+    public String absoluteSmiles;
+
     public String originalInchi;
 
     public String originalInchiKey;
@@ -236,5 +238,13 @@ public class SourceNaturalProduct {
 
     public void setGeographicLocation(ArrayList<String> geographicLocation) {
         this.geographicLocation = geographicLocation;
+    }
+
+    public String getAbsoluteSmiles() {
+        return absoluteSmiles;
+    }
+
+    public void setAbsoluteSmiles(String absoluteSmiles) {
+        this.absoluteSmiles = absoluteSmiles;
     }
 }

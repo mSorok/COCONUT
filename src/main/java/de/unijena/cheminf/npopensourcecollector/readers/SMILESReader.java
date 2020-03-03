@@ -53,6 +53,7 @@ public class SMILESReader implements Reader {
     @Override
     public void readFile(File file) {
         SmilesGenerator smilesGenerator = new SmilesGenerator(SmiFlavor.Unique );
+        SmilesGenerator absoluteSmilesGenerator = new SmilesGenerator(SmiFlavor.Absolute );
 
 
         this.file = file;
@@ -142,7 +143,12 @@ public class SMILESReader implements Reader {
 
                                 }
 
-                                molecule.setProperty("SIMPLE_SMILES", smilesGenerator.create(molecule));
+                                String simpleSmiles = smilesGenerator.create(molecule);
+                                String absoluteSmiles = absoluteSmilesGenerator.create(molecule);
+                                molecule.setProperty("SIMPLE_SMILES", simpleSmiles);
+                                if(!absoluteSmiles.equals(simpleSmiles)) {
+                                    molecule.setProperty("ABSOLUTE_SMILES", absoluteSmiles);
+                                }
 
 
                                 DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd");
@@ -189,14 +195,14 @@ public class SMILESReader implements Reader {
                             }
 
                         } catch (InvalidSmilesException e) {
-                            e.printStackTrace();
-                            System.out.println(line);
-                            System.out.println(splitted);
-                            System.out.println(splitted[0]);
+                            //e.printStackTrace();
+                            //System.out.println(line);
+                            //System.out.println(splitted);
+                            //System.out.println(splitted[0]);
                             smilesReader.skip(count - 1);
                         }
 
-                    } catch (Exception e) {
+                    } catch (Exception  e) {
                         e.printStackTrace();
                     }
                     count++;

@@ -52,6 +52,7 @@ public class CSVReader implements Reader {
     public void readFile(File file) {
 
         SmilesGenerator smilesGenerator = new SmilesGenerator(SmiFlavor.Unique );
+        SmilesGenerator absoluteSmilesGenerator = new SmilesGenerator(SmiFlavor.Absolute );
         SmilesParser sp = new SmilesParser(DefaultChemObjectBuilder.getInstance());
         this.file = file;
         this.source = file.getName().toLowerCase().replace(".csv", "");
@@ -227,7 +228,12 @@ public class CSVReader implements Reader {
 
                             }
 
-                            molecule.setProperty("SIMPLE_SMILES", smilesGenerator.create(molecule));
+                            String simpleSmiles = smilesGenerator.create(molecule);
+                            String absoluteSmiles = absoluteSmilesGenerator.create(molecule);
+                            molecule.setProperty("SIMPLE_SMILES", simpleSmiles);
+                            if(!absoluteSmiles.equals(simpleSmiles)) {
+                                molecule.setProperty("ABSOLUTE_SMILES", absoluteSmiles);
+                            }
 
 
                             DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd");

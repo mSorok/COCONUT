@@ -17,8 +17,10 @@ import org.openscience.cdk.isomorphism.UniversalIsomorphismTester;
 import org.openscience.cdk.signature.AtomSignature;
 import org.openscience.cdk.smiles.SmiFlavor;
 import org.openscience.cdk.smiles.SmilesGenerator;
+import org.openscience.cdk.tools.manipulator.AtomContainerManipulator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.annotation.Transient;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,7 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-@Service
+@Component
 @Transactional(propagation = Propagation.REQUIRED, readOnly = false)
 public class FragmentCalculatorTask implements Runnable {
 
@@ -176,14 +178,15 @@ public class FragmentCalculatorTask implements Runnable {
 
 
                 try {
-                    np.setSugar_free_smiles(smilesGenerator.create(acSugarFree));
+                    IAtomContainer nm = AtomContainerManipulator.removeHydrogens(acFull);
+                    np.setSugar_free_smiles(smilesGenerator.create(nm));
                 } catch (CDKException e) {
                     e.printStackTrace();
                 }
 
 
                 uniqueNaturalProductRepository.save(np);
-                System.out.println("Saved natural products without sugar and NPL score");
+                //System.out.println("Saved natural products without sugar and NPL score");
 
             }
             else{
@@ -222,20 +225,23 @@ public class FragmentCalculatorTask implements Runnable {
 
                 uniqueNaturalProductRepository.save(np);
 
-                System.out.println("Saved natural products with only sugars and NPL score");
+                //System.out.println("Saved natural products with only sugars and NPL score");
             }
 
 
             //Calculate Murko Framework
 
             try {
-                MurckoFragmenter murckoFragmenter = new MurckoFragmenter(true, 5);
+                MurckoFragmenter murckoFragmenter = new MurckoFragmenter(true, 3);
                 murckoFragmenter.generateFragments(acFull);
-                np.setMurko_framework(murckoFragmenter.getFrameworks()[0]);
-                uniqueNaturalProductRepository.save(np);
+                if(murckoFragmenter.getFragments() != null && murckoFragmenter.getFragments().length >0) {
+                    np.setMurko_framework(murckoFragmenter.getFrameworks()[0]);
+                    uniqueNaturalProductRepository.save(np);
+                }
 
-            } catch (CDKException e) {
-                e.printStackTrace();
+            } catch (CDKException | NullPointerException e) {
+                //e.printStackTrace();
+                System.out.println("Failed creating Murcko fragment");
             }
 
 

@@ -28,6 +28,10 @@ public class AtomContainerToSourceNaturalProductService {
         np.setSimpleInchiKey(ac.getProperty("SIMPLE_INCHIKEY"));
         np.setSimpleSmiles(ac.getProperty("SIMPLE_SMILES"));
 
+        if(ac.getProperties().containsKey("ABSOLUTE_SMILES")) {
+            np.setAbsoluteSmiles(ac.getProperty("ABSOLUTE_SMILES"));
+        }
+
         np.setTotalAtomNumber(ac.getAtomCount());
 
         int heavyAtomCount = 0;
