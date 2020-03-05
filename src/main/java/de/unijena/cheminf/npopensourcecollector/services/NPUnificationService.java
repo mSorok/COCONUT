@@ -157,13 +157,13 @@ public class NPUnificationService {
                     unp.found_in_databases.add(snp.getSource());
                 }
 
-                //Absolute smiles (with dtereochemistry)
-                if(snp.getAbsoluteSmiles() != null) {
+                //Absolute smiles (with stereochemistry)
+                if(snp.getAbsoluteSmiles() != null && !snp.getAbsoluteSmiles().equals("")) {
                     if (unp.absolute_smiles.containsKey(snp.getAbsoluteSmiles())) {
                         unp.absolute_smiles.get(snp.getAbsoluteSmiles()).add(snp.getSource());
 
                     } else {
-                        ArrayList newSourceList = new ArrayList();
+                        HashSet newSourceList = new HashSet();
                         newSourceList.add(snp.getSource());
                         unp.absolute_smiles.put(snp.getAbsoluteSmiles(), newSourceList);
                     }
@@ -173,7 +173,7 @@ public class NPUnificationService {
                         unp.absolute_smiles.get("nostereo").add(snp.getSource());
                     }
                     else{
-                        ArrayList newSourceList = new ArrayList();
+                        HashSet newSourceList = new HashSet();
                         newSourceList.add(snp.getSource());
                         unp.absolute_smiles.put("nostereo", newSourceList);
                     }

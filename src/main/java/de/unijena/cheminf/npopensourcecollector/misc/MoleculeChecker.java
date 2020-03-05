@@ -118,13 +118,12 @@ public class MoleculeChecker {
             }
 
 
-            String smi;
-            SmilesGenerator sg = new SmilesGenerator(SmiFlavor.Unique);
+            SmilesGenerator sg = new SmilesGenerator(SmiFlavor.Absolute);
             SmilesParser sp = new SmilesParser(DefaultChemObjectBuilder.getInstance());
             Map<Object, Object> properties = molecule.getProperties();
             String id = molecule.getID();
             try {
-                smi = sg.create(molecule);
+                String smi = sg.create(molecule);
                 molecule = sp.parseSmiles(smi);
                 molecule.setProperties(properties);
                 molecule.setID(id);

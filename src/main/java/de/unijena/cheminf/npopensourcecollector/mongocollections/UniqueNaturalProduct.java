@@ -8,10 +8,7 @@ import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.security.PublicKey;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Hashtable;
-import java.util.Map;
+import java.util.*;
 
 @Document
 public class UniqueNaturalProduct {
@@ -42,7 +39,7 @@ public class UniqueNaturalProduct {
     public String sugar_free_smiles;
 
 
-    public Hashtable<String, ArrayList<String>> absolute_smiles;
+    public Hashtable<String, HashSet<String>> absolute_smiles;
 
     public Integer contains_ring_sugars;
 
@@ -106,21 +103,23 @@ public class UniqueNaturalProduct {
     public String murko_framework;
 
     public Hashtable<String, Integer> ertlFunctionalFragments;
+    public Hashtable<String, Integer> ertlFunctionalFragmentsPseudoSmiles;
 
 
-    public String pubchemFingerprint;
 
-    public String circularFingerprint;
+    public BitSet pubchemFingerprint;
 
-    public String klekotaRothFingerprint;
+    public BitSet circularFingerprint;
 
-    public String hybridizationFingerprint;
+    public BitSet klekotaRothFingerprint;
 
-    public String maccsFingerprint;
+    public BitSet hybridizationFingerprint;
 
-    public String shortestPathFingerprint;
+    public BitSet maccsFingerprint;
 
-    public String substructureFingerprint;
+    public BitSet shortestPathFingerprint;
+
+    public BitSet substructureFingerprint;
 
 
 
@@ -795,67 +794,75 @@ public class UniqueNaturalProduct {
         this.ertlFunctionalFragments = ertlFunctionalFragments;
     }
 
-    public String getPubchemFingerprint() {
-        return pubchemFingerprint;
+    public Hashtable<String, Integer> getErtlFunctionalFragmentsPseudoSmiles() {
+        return ertlFunctionalFragmentsPseudoSmiles;
     }
 
-    public void setPubchemFingerprint(String pubchemFingerprint) {
-        this.pubchemFingerprint = pubchemFingerprint;
+    public void setErtlFunctionalFragmentsPseudoSmiles(Hashtable<String, Integer> ertlFunctionalFragmentsPseudoSmiles) {
+        this.ertlFunctionalFragmentsPseudoSmiles = ertlFunctionalFragmentsPseudoSmiles;
     }
 
-    public String getCircularFingerprint() {
-        return circularFingerprint;
-    }
-
-    public void setCircularFingerprint(String circularFingerprint) {
-        this.circularFingerprint = circularFingerprint;
-    }
-
-    public String getKlekotaRothFingerprint() {
-        return klekotaRothFingerprint;
-    }
-
-    public void setKlekotaRothFingerprint(String klekotaRothFingerprint) {
-        this.klekotaRothFingerprint = klekotaRothFingerprint;
-    }
-
-    public String getHybridizationFingerprint() {
-        return hybridizationFingerprint;
-    }
-
-    public void setHybridizationFingerprint(String hybridizationFingerprint) {
-        this.hybridizationFingerprint = hybridizationFingerprint;
-    }
-
-    public String getMaccsFingerprint() {
-        return maccsFingerprint;
-    }
-
-    public void setMaccsFingerprint(String maccsFingerprint) {
-        this.maccsFingerprint = maccsFingerprint;
-    }
-
-    public String getShortestPathFingerprint() {
-        return shortestPathFingerprint;
-    }
-
-    public void setShortestPathFingerprint(String shortestPathFingerprint) {
-        this.shortestPathFingerprint = shortestPathFingerprint;
-    }
-
-    public String getSubstructureFingerprint() {
-        return substructureFingerprint;
-    }
-
-    public void setSubstructureFingerprint(String substructureFingerprint) {
-        this.substructureFingerprint = substructureFingerprint;
-    }
-
-    public Hashtable<String, ArrayList<String>> getAbsolute_smiles() {
+    public Hashtable<String, HashSet<String>> getAbsolute_smiles() {
         return absolute_smiles;
     }
 
-    public void setAbsolute_smiles(Hashtable<String, ArrayList<String>> absolute_smiles) {
+    public void setAbsolute_smiles(Hashtable<String, HashSet<String>> absolute_smiles) {
         this.absolute_smiles = absolute_smiles;
+    }
+
+    public BitSet getPubchemFingerprint() {
+        return pubchemFingerprint;
+    }
+
+    public void setPubchemFingerprint(BitSet pubchemFingerprint) {
+        this.pubchemFingerprint = pubchemFingerprint;
+    }
+
+    public BitSet getCircularFingerprint() {
+        return circularFingerprint;
+    }
+
+    public void setCircularFingerprint(BitSet circularFingerprint) {
+        this.circularFingerprint = circularFingerprint;
+    }
+
+    public BitSet getKlekotaRothFingerprint() {
+        return klekotaRothFingerprint;
+    }
+
+    public void setKlekotaRothFingerprint(BitSet klekotaRothFingerprint) {
+        this.klekotaRothFingerprint = klekotaRothFingerprint;
+    }
+
+    public BitSet getHybridizationFingerprint() {
+        return hybridizationFingerprint;
+    }
+
+    public void setHybridizationFingerprint(BitSet hybridizationFingerprint) {
+        this.hybridizationFingerprint = hybridizationFingerprint;
+    }
+
+    public BitSet getMaccsFingerprint() {
+        return maccsFingerprint;
+    }
+
+    public void setMaccsFingerprint(BitSet maccsFingerprint) {
+        this.maccsFingerprint = maccsFingerprint;
+    }
+
+    public BitSet getShortestPathFingerprint() {
+        return shortestPathFingerprint;
+    }
+
+    public void setShortestPathFingerprint(BitSet shortestPathFingerprint) {
+        this.shortestPathFingerprint = shortestPathFingerprint;
+    }
+
+    public BitSet getSubstructureFingerprint() {
+        return substructureFingerprint;
+    }
+
+    public void setSubstructureFingerprint(BitSet substructureFingerprint) {
+        this.substructureFingerprint = substructureFingerprint;
     }
 }

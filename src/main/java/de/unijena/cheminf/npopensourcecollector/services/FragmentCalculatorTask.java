@@ -178,7 +178,7 @@ public class FragmentCalculatorTask implements Runnable {
 
 
                 try {
-                    IAtomContainer nm = AtomContainerManipulator.removeHydrogens(acFull);
+                    IAtomContainer nm = AtomContainerManipulator.removeHydrogens(acSugarFree);
                     np.setSugar_free_smiles(smilesGenerator.create(nm));
                 } catch (CDKException e) {
                     e.printStackTrace();

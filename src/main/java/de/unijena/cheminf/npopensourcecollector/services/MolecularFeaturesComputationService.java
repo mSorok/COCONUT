@@ -5,9 +5,13 @@ import de.unijena.cheminf.npopensourcecollector.mongocollections.SyntheticMolecu
 import de.unijena.cheminf.npopensourcecollector.mongocollections.UniqueNaturalProduct;
 import de.unijena.cheminf.npopensourcecollector.mongocollections.UniqueNaturalProductRepository;
 import org.openscience.cdk.DefaultChemObjectBuilder;
+import org.openscience.cdk.aromaticity.Aromaticity;
+import org.openscience.cdk.aromaticity.ElectronDonation;
 import org.openscience.cdk.atomtype.CDKAtomTypeMatcher;
 import org.openscience.cdk.exception.CDKException;
 import org.openscience.cdk.fingerprint.*;
+import org.openscience.cdk.graph.Cycles;
+import org.openscience.cdk.hash.MoleculeHashGenerator;
 import org.openscience.cdk.interfaces.*;
 import org.openscience.cdk.qsar.DescriptorValue;
 import org.openscience.cdk.qsar.descriptors.molecular.*;
@@ -18,12 +22,16 @@ import org.openscience.cdk.silent.SilentChemObjectBuilder;
 import org.openscience.cdk.smiles.SmiFlavor;
 import org.openscience.cdk.smiles.SmilesGenerator;
 import org.openscience.cdk.tools.CDKHydrogenAdder;
+import org.openscience.cdk.tools.ErtlFunctionalGroupsFinder;
+import org.openscience.cdk.tools.ErtlFunctionalGroupsFinderUtility;
 import org.openscience.cdk.tools.manipulator.AtomContainerManipulator;
 import org.openscience.cdk.tools.manipulator.AtomTypeManipulator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.List;
 
 
@@ -57,6 +65,12 @@ public class MolecularFeaturesComputationService {
 
     SubstructureFingerprinter substructureFingerprinter = new SubstructureFingerprinter();
 
+    Aromaticity aromaticityModel = new Aromaticity(ElectronDonation.daylight(), Cycles.or(Cycles.all(), Cycles.cdkAromaticSet()));
+    ErtlFunctionalGroupsFinder ertlFunctionalGroupsFinder  = ErtlFunctionalGroupsFinderUtility.getErtlFunctionalGroupsFinderGeneralizingMode();
+    MoleculeHashGenerator efgHashGenerator = ErtlFunctionalGroupsFinderUtility.getFunctionalGroupHashGenerator();
+    SmilesGenerator efgSmilesGenerator = new SmilesGenerator(SmiFlavor.Unique | SmiFlavor.UseAromaticSymbols);
+
+
 
 
 
@@ -87,6 +101,7 @@ public class MolecularFeaturesComputationService {
 
             np = computeFeatures(np);
             np = computeFingerprints(np);
+            np = computeErtlFunctionalGroups(np);
 
             uniqueNaturalProductRepository.save(np);
         }
@@ -128,13 +143,13 @@ public class MolecularFeaturesComputationService {
 
         try {
 
-            np.setPubchemFingerprint(pubchemFingerprinter.getBitFingerprint(ac).getSetbits().toString());
-            np.setCircularFingerprint(circularFingerprinter.getBitFingerprint(ac).getSetbits().toString());
-            np.setKlekotaRothFingerprint(klekotaRothFingerprinter.getBitFingerprint(ac).getSetbits().toString());
-            np.setHybridizationFingerprint(hybridizationFingerprinter.getBitFingerprint(ac).getSetbits().toString());
-            np.setMaccsFingerprint(maccsFingerprinter.getBitFingerprint(ac).getSetbits().toString());
-            np.setShortestPathFingerprint(shortestPathFingerprinter.getBitFingerprint(ac).getSetbits().toString());
-            np.setSubstructureFingerprint(substructureFingerprinter.getBitFingerprint(ac).getSetbits().toString());
+            np.setPubchemFingerprint(pubchemFingerprinter.getBitFingerprint(ac).asBitSet());
+            np.setCircularFingerprint(circularFingerprinter.getBitFingerprint(ac).asBitSet());
+            np.setKlekotaRothFingerprint(klekotaRothFingerprinter.getBitFingerprint(ac).asBitSet());
+            np.setHybridizationFingerprint(hybridizationFingerprinter.getBitFingerprint(ac).asBitSet());
+            np.setMaccsFingerprint(maccsFingerprinter.getBitFingerprint(ac).asBitSet());
+            np.setShortestPathFingerprint(shortestPathFingerprinter.getBitFingerprint(ac).asBitSet());
+            np.setSubstructureFingerprint(substructureFingerprinter.getBitFingerprint(ac).asBitSet());
 
         } catch (CDKException | UnsupportedOperationException e) {
             e.printStackTrace();
@@ -143,8 +158,86 @@ public class MolecularFeaturesComputationService {
     }
 
 
+    public UniqueNaturalProduct computeErtlFunctionalGroups(UniqueNaturalProduct np){
+
+        IAtomContainer ac = atomContainerToUniqueNaturalProductService.createAtomContainer(np);
+        List<IAtomContainer> functionalGroupsGeneralized;
+
+        // Addition of implicit hydrogens & atom typer
+        CDKAtomTypeMatcher matcher = CDKAtomTypeMatcher.getInstance(ac.getBuilder());
+        CDKHydrogenAdder adder = CDKHydrogenAdder.getInstance(ac.getBuilder() );
+        for (int j = 0; j < ac.getAtomCount(); j++) {
+            IAtom atom = ac.getAtom(j);
+            IAtomType type = null;
+            try {
+                type = matcher.findMatchingAtomType(ac, atom);
+                AtomTypeManipulator.configure(atom, type);
+            } catch (CDKException e) {
+                e.printStackTrace();
+            }
+
+        }
+
+        try {
+            adder.addImplicitHydrogens(ac);
+        } catch (CDKException e) {
+            e.printStackTrace();
+        }
+        AtomContainerManipulator.convertImplicitToExplicitHydrogens(ac);
+        AtomContainerManipulator.removeNonChiralHydrogens(ac);
+
+
+        ac = ErtlFunctionalGroupsFinderUtility.applyFiltersAndPreprocessing(ac, aromaticityModel);
+        functionalGroupsGeneralized = ertlFunctionalGroupsFinder.find(ac, false);
+        if (!functionalGroupsGeneralized.isEmpty()) {
+
+            np.ertlFunctionalFragments = new Hashtable<>();
+            np.ertlFunctionalFragmentsPseudoSmiles = new Hashtable<>();
+
+            HashMap<Long, IAtomContainer> tmpResultsMap = new HashMap<>(functionalGroupsGeneralized.size(), 1);
+            for (IAtomContainer functionalGroup : functionalGroupsGeneralized) {
+                Long hashCode = efgHashGenerator.generate(functionalGroup);
+                if (tmpResultsMap.keySet().contains(hashCode)) {
+                    int tmpFrequency = tmpResultsMap.get(hashCode).getProperty("FREQUENCY");
+                    tmpResultsMap.get(hashCode).setProperty("FREQUENCY", tmpFrequency + 1);
+                } else {
+                    functionalGroup.setProperty("FREQUENCY", 1);
+                    tmpResultsMap.put(hashCode, functionalGroup);
+                }
+            }
+
+
+            for (Long tmpHashCode : tmpResultsMap.keySet()) {
+                IAtomContainer tmpFunctionalGroup = tmpResultsMap.get(tmpHashCode);
+                String tmpFGSmilesCode = null;
+                try {
+                    tmpFGSmilesCode = efgSmilesGenerator.create(tmpFunctionalGroup);
+
+                    String tmpFGPseudoSmilesCode = ErtlFunctionalGroupsFinderUtility.createPseudoSmilesCode(tmpFunctionalGroup);
+
+
+                    int tmpFrequency = tmpFunctionalGroup.getProperty("FREQUENCY");
+
+                    np.ertlFunctionalFragments.put(tmpFGSmilesCode, tmpFrequency);
+                    np.ertlFunctionalFragmentsPseudoSmiles.put(tmpFGPseudoSmilesCode, tmpFrequency);
+
+                } catch (CDKException e) {
+                    e.printStackTrace();
+                }
+            }
+
+        }
+
+
+
+
+        return np;
+
+    }
+
+
     public void predictStereochemistry(){
-        //TODO
+        //TODO - eventually one day, but very high combinatorics
     }
 
 

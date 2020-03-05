@@ -191,7 +191,8 @@ public class SDFReader implements Reader{
                         String simpleSmiles = smilesGenerator.create(molecule);
                         String absoluteSmiles = absoluteSmilesGenerator.create(molecule);
                         molecule.setProperty("SIMPLE_SMILES", simpleSmiles);
-                        if(!absoluteSmiles.equals(simpleSmiles)) {
+
+                        if(!absoluteSmiles.equals(simpleSmiles) && absoluteSmiles.contains("@")) {
                             molecule.setProperty("ABSOLUTE_SMILES", absoluteSmiles);
                         }
 
