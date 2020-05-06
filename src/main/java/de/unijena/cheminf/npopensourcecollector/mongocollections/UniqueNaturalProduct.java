@@ -38,6 +38,8 @@ public class UniqueNaturalProduct {
 
     public String sugar_free_smiles;
 
+    public String deep_smiles = "";
+
 
     public Hashtable<String, HashSet<String>> absolute_smiles;
 
@@ -79,7 +81,9 @@ public class UniqueNaturalProduct {
 
     public Integer number_of_oxygens;
 
-    public Integer number_of_rings;
+    public Integer max_number_of_rings;
+
+    public Integer min_number_of_rings;
 
     public Integer number_repeated_fragments;
 
@@ -107,19 +111,19 @@ public class UniqueNaturalProduct {
 
 
 
-    public BitSet pubchemFingerprint;
+    public String pubchemFingerprint;
 
-    public BitSet circularFingerprint;
+    public String circularFingerprint;
 
-    public BitSet klekotaRothFingerprint;
+    public String klekotaRothFingerprint;
 
-    public BitSet hybridizationFingerprint;
+    public String hybridizationFingerprint;
 
-    public BitSet maccsFingerprint;
+    public String maccsFingerprint;
 
-    public BitSet shortestPathFingerprint;
+    public String shortestPathFingerprint;
 
-    public BitSet substructureFingerprint;
+    public String substructureFingerprint;
 
 
 
@@ -213,14 +217,6 @@ public class UniqueNaturalProduct {
 
     //Polar surface area expressed as a ratio to molecular size. Calculates tpsaEfficiency, which is to TPSADescriptor / molecular weight, in units of square Angstroms per Dalton. Other related descriptors may also be useful to add, e.g. ratio of polar to hydrophobic surface area.
     public Double tpsaEfficiency;
-
-
-
-
-
-    //TODO consider MDEDescriptor
-    //TODO consider WHIMDescriptor
-
 
 
 
@@ -357,12 +353,21 @@ public class UniqueNaturalProduct {
         this.number_of_oxygens = number_of_oxygens;
     }
 
-    public Integer getNumber_of_rings() {
-        return number_of_rings;
+
+    public Integer getMax_number_of_rings() {
+        return max_number_of_rings;
     }
 
-    public void setNumber_of_rings(Integer number_of_rings) {
-        this.number_of_rings = number_of_rings;
+    public void setMax_number_of_rings(Integer max_number_of_rings) {
+        this.max_number_of_rings = max_number_of_rings;
+    }
+
+    public Integer getMin_number_of_rings() {
+        return min_number_of_rings;
+    }
+
+    public void setMin_number_of_rings(Integer min_number_of_rings) {
+        this.min_number_of_rings = min_number_of_rings;
     }
 
     public Integer getNumber_repeated_fragments() {
@@ -810,59 +815,67 @@ public class UniqueNaturalProduct {
         this.absolute_smiles = absolute_smiles;
     }
 
-    public BitSet getPubchemFingerprint() {
+    public String getPubchemFingerprint() {
         return pubchemFingerprint;
     }
 
-    public void setPubchemFingerprint(BitSet pubchemFingerprint) {
+    public void setPubchemFingerprint(String pubchemFingerprint) {
         this.pubchemFingerprint = pubchemFingerprint;
     }
 
-    public BitSet getCircularFingerprint() {
+    public String getCircularFingerprint() {
         return circularFingerprint;
     }
 
-    public void setCircularFingerprint(BitSet circularFingerprint) {
+    public void setCircularFingerprint(String circularFingerprint) {
         this.circularFingerprint = circularFingerprint;
     }
 
-    public BitSet getKlekotaRothFingerprint() {
+    public String getKlekotaRothFingerprint() {
         return klekotaRothFingerprint;
     }
 
-    public void setKlekotaRothFingerprint(BitSet klekotaRothFingerprint) {
+    public void setKlekotaRothFingerprint(String klekotaRothFingerprint) {
         this.klekotaRothFingerprint = klekotaRothFingerprint;
     }
 
-    public BitSet getHybridizationFingerprint() {
+    public String getHybridizationFingerprint() {
         return hybridizationFingerprint;
     }
 
-    public void setHybridizationFingerprint(BitSet hybridizationFingerprint) {
+    public void setHybridizationFingerprint(String hybridizationFingerprint) {
         this.hybridizationFingerprint = hybridizationFingerprint;
     }
 
-    public BitSet getMaccsFingerprint() {
+    public String getMaccsFingerprint() {
         return maccsFingerprint;
     }
 
-    public void setMaccsFingerprint(BitSet maccsFingerprint) {
+    public void setMaccsFingerprint(String maccsFingerprint) {
         this.maccsFingerprint = maccsFingerprint;
     }
 
-    public BitSet getShortestPathFingerprint() {
+    public String getShortestPathFingerprint() {
         return shortestPathFingerprint;
     }
 
-    public void setShortestPathFingerprint(BitSet shortestPathFingerprint) {
+    public void setShortestPathFingerprint(String shortestPathFingerprint) {
         this.shortestPathFingerprint = shortestPathFingerprint;
     }
 
-    public BitSet getSubstructureFingerprint() {
+    public String getSubstructureFingerprint() {
         return substructureFingerprint;
     }
 
-    public void setSubstructureFingerprint(BitSet substructureFingerprint) {
+    public void setSubstructureFingerprint(String substructureFingerprint) {
         this.substructureFingerprint = substructureFingerprint;
+    }
+
+    public String getDeep_smiles() {
+        return deep_smiles;
+    }
+
+    public void setDeep_smiles(String deep_smiles) {
+        this.deep_smiles = deep_smiles;
     }
 }

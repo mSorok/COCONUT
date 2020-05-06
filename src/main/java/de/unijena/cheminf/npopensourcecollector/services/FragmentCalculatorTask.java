@@ -242,6 +242,8 @@ public class FragmentCalculatorTask implements Runnable {
             } catch (CDKException | NullPointerException e) {
                 //e.printStackTrace();
                 System.out.println("Failed creating Murcko fragment");
+                np.setMurko_framework("");
+                uniqueNaturalProductRepository.save(np);
             }
 
 

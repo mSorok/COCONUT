@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.util.StringUtils;
 
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,6 +19,28 @@ public class CreateCNPidService {
 
 
     public static String prefix= "CNP";
+
+    public void importIDs(String filename) {
+
+        try {
+            BufferedReader bufferedReader = new BufferedReader(new FileReader( new File(filename)));
+
+
+            int count = 1;
+            String line;
+
+
+            while ((line = bufferedReader.readLine()) != null){
+
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
+    }
 
     public void createDeNovoIDs(){
 

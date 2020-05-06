@@ -5,6 +5,7 @@ import de.unijena.cheminf.npopensourcecollector.mongocollections.SourceNaturalPr
 import de.unijena.cheminf.npopensourcecollector.mongocollections.UniqueNaturalProduct;
 import de.unijena.cheminf.npopensourcecollector.mongocollections.UniqueNaturalProductRepository;
 import org.openscience.cdk.exception.CDKException;
+import org.openscience.cdk.graph.Cycles;
 import org.openscience.cdk.interfaces.IAtom;
 import org.openscience.cdk.interfaces.IAtomContainer;
 import org.openscience.cdk.interfaces.IBond;
@@ -48,14 +49,13 @@ public class NPUnificationService {
 
         System.out.println("SOURCES  "+sourceNames);
 
-        List<Object> uniqueInchiKeys = sourceNaturalProductRepository.findUniqueInchiKeys();
-        System.out.println(uniqueInchiKeys.size());
+        List<String> uniqueInchiKeys = sourceNaturalProductRepository.findUniqueInchiKeys();
 
-        for(Object oinchikey: uniqueInchiKeys){
+        for(String oinchikey: uniqueInchiKeys){
 
 
-            String inchikey = oinchikey.toString();
-            //System.out.println(inchikey);
+            String inchikey =  oinchikey.split("\"")[3];  //oinchikey.toString();
+            System.out.println(inchikey);
             List<SourceNaturalProduct> snpList = sourceNaturalProductRepository.findBySimpleInchiKey(inchikey);
             //System.out.println(snpList.get(0).simpleInchiKey+" "+snpList.get(0).source);
 
@@ -114,17 +114,36 @@ public class NPUnificationService {
 
                 }
                 else if( unp.getName() != null && snp.getName() != null){
-                    unp.synonyms.add(snp.getName().trim());
+                    if(snp.getSource().equals("chebi")){
+
+                        //replace name by ChebiName
+                        unp.synonyms.add(unp.name);
+                        unp.name = snp.getName().trim();
+                    }
+                    else {
+                        unp.synonyms.add(snp.getName().trim());
+                    }
                 }
 
                 //synonyms
                 if(snp.getSynonyms() != null){
-                    unp.synonyms.addAll(snp.getSynonyms());
+
+                    String[] synonyms;
+
+                    for(String sy : snp.getSynonyms()){
+
+                        String[] names = sy.split("\\\n");
+                        for (int i = 0; i < names.length; i++) {
+                            unp.synonyms.add(names[i].trim());
+                        }
+                    }
+
                 }
 
 
                 //species
                 if(snp.organismText != null ){
+
                     unp.textTaxa.addAll(snp.organismText);
                 }
                 if(snp.taxid != null){
@@ -149,7 +168,10 @@ public class NPUnificationService {
 
                 //refs
                 if(snp.getCitation() != null){
-                    unp.citationDOI.addAll(snp.getCitation());
+                    for(String cit : snp.getCitation()){
+                        unp.citationDOI.add(cit.trim());
+                    }
+
                 }
 
                 //database
@@ -209,11 +231,17 @@ public class NPUnificationService {
 
         IAtomContainer im = atomContainerToUniqueNaturalProductService.createAtomContainer(m);
 
+        //TODO min cycle base (min number of rings)
+
         // count rings
         try {
             IRingSet rs = arf.findAllRings(im, 20);
 
-            m.setNumber_of_rings(rs.getAtomContainerCount());
+            m.setMax_number_of_rings(rs.getAtomContainerCount());
+
+            Cycles   cycles = Cycles.sssr(im);
+            IRingSet rings  = cycles.toRingSet();
+            m.setMin_number_of_rings(rings.getAtomContainerCount()); //SSSR
 
 
         } catch (CDKException e) {
@@ -256,6 +284,8 @@ public class NPUnificationService {
 
         return(m);
     }
+
+
 
 
     public ArrayList fetchSourceNames(){

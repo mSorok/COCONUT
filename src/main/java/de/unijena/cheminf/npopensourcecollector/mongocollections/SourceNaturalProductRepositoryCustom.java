@@ -4,7 +4,7 @@ import java.util.List;
 
 public interface SourceNaturalProductRepositoryCustom {
 
-    List<Object> findUniqueInchiKeys();
+    List<String> findUniqueInchiKeys();
 
     List<Object> findUniqueSourceNames();
 

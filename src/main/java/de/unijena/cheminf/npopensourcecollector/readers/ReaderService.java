@@ -29,7 +29,7 @@ public class ReaderService {
 
             for(String f : this.molecularFiles){
                 System.out.println(f);
-                if(f.contains("sdf") || f.contains("smi") || f.contains("mol") || f.contains("inchi") || f.contains("csv")){
+                if(f.contains("sdf") || f.contains("smi") || f.contains("mol") || f.contains("inchi") || f.contains("csv") || f.contains("tsv")){
                     molecularFileFound = true;
                 }
             }

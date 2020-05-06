@@ -30,8 +30,8 @@ public class DatabaseTypeChecker {
         private final String[] bacteria = {"streptomedb"};
         private final String[] fungi = {"lichendatabase"};
         private final String[] animals = {};
-        private final String[] marine = {"swmd"};
-        private final String[] mixed = {"nubbedb","npcare","npatlas","npass","analyticon_all_np", "biofacquim"};
+        private final String[] marine = {"swmd", "mnp"};
+        private final String[] mixed = {"nubbedb","npcare","npatlas", "np_atlas_2019_12","npass","analyticon_all_np", "biofacquim"};
 
         private final HashSet<String> taxPlants = new HashSet<String>(Arrays.asList(plants));
         private final HashSet<String> taxBacteria = new HashSet<String>(Arrays.asList(bacteria));

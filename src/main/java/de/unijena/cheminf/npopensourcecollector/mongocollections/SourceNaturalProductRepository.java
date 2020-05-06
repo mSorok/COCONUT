@@ -11,9 +11,4 @@ public interface SourceNaturalProductRepository extends MongoRepository<SourceNa
 
     List<SourceNaturalProduct> findBySimpleInchiKey(String inchikey);
 
-
-
-
-
-
 }

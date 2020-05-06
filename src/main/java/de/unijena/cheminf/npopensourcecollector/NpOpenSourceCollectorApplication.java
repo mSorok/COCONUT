@@ -48,6 +48,10 @@ public class NpOpenSourceCollectorApplication implements CommandLineRunner {
     CreateCNPidService createCNPidService;
 
 
+    @Autowired
+    ExportService exportService;
+
+
 
     public static void main(String[] args) {
         SpringApplication.run(NpOpenSourceCollectorApplication.class, args);
@@ -60,7 +64,7 @@ public class NpOpenSourceCollectorApplication implements CommandLineRunner {
 
 
 
-        System.out.println("Code version from 8th October 2019");
+        System.out.println("Code version from 30th april 2020");
 
         if (args.length > 0) {
 
@@ -100,6 +104,14 @@ public class NpOpenSourceCollectorApplication implements CommandLineRunner {
                 readerService.readSyntheticMoleculesAndInsertInMongo(args[1]); //tsv file
                 molecularFeaturesComputationService.doWorkForSM();
             }
+            else if(args[0].equals("generateSDF")){
+
+                exportService.generateSDF("COCONUT.sdf");
+
+            }
+            else if(args[0].equals("generateTSV")){
+                exportService.generateTSV("COCONUT.tsv");
+            }
             else { //Filling from scratch
                 //cleaning the DB before filling it
                 mongoTemplate.getDb().drop();
@@ -126,25 +138,24 @@ public class NpOpenSourceCollectorApplication implements CommandLineRunner {
 
                     //fragmentCalculatorService.doWork();
 
-                    fragmentCalculatorService.doParallelizedWork(40);
+                    fragmentCalculatorService.doParallelizedWork(42);
 
 
 
                     System.out.println("Done fragmenting natural products");
                     SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
                     System.out.println("at: "+formatter.format(new Date())+"\n");
-
+                    createCNPidService.createDeNovoIDs();
 
                     // Compute additional features
                     molecularFeaturesComputationService.doWork();
-                    createCNPidService.createDeNovoIDs();
-                    updaterService.updateSourceNaturalProductsParallelized(40);
+                    updaterService.updateSourceNaturalProductsParallelized(42);
 
                     //read and insert synthetic molecules
                     readerService.readSyntheticMoleculesAndInsertInMongo(args[1]); //tsv file
                     molecularFeaturesComputationService.doWorkForSM();
 
-
+/*
                     //compute similarities between natural products
                     similarityComputationService.generateAllPairs();
                     // //similarityComputationService.computeSimilarities();
@@ -153,6 +164,7 @@ public class NpOpenSourceCollectorApplication implements CommandLineRunner {
                         System.out.println("I'm waiting");
                         TimeUnit.MINUTES.sleep(1);
                     }
+*/
 
                 } else {
                     System.out.println("Could not find files with molecules in the provided directory!");

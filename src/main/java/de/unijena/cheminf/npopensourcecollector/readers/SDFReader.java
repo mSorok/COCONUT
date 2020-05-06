@@ -58,7 +58,6 @@ public class SDFReader implements Reader{
         moleculeChecker = BeanUtil.getBean(MoleculeChecker.class);
         databaseTypeChecker = BeanUtil.getBean(DatabaseTypeChecker.class);
 
-
     }
 
     @Override

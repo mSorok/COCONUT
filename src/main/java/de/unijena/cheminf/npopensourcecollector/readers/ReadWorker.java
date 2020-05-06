@@ -92,7 +92,7 @@ public class ReadWorker {
         ){
             this.submittedFileFormat="inchi";
             return true;
-        }else if(filename.endsWith("csv") ){
+        }else if(filename.endsWith("csv") || filename.endsWith("tsv") ){
             this.submittedFileFormat="csv";
             return true;
         }

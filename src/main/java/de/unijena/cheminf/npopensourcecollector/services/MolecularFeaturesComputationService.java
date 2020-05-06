@@ -143,13 +143,13 @@ public class MolecularFeaturesComputationService {
 
         try {
 
-            np.setPubchemFingerprint(pubchemFingerprinter.getBitFingerprint(ac).asBitSet());
-            np.setCircularFingerprint(circularFingerprinter.getBitFingerprint(ac).asBitSet());
-            np.setKlekotaRothFingerprint(klekotaRothFingerprinter.getBitFingerprint(ac).asBitSet());
-            np.setHybridizationFingerprint(hybridizationFingerprinter.getBitFingerprint(ac).asBitSet());
-            np.setMaccsFingerprint(maccsFingerprinter.getBitFingerprint(ac).asBitSet());
-            np.setShortestPathFingerprint(shortestPathFingerprinter.getBitFingerprint(ac).asBitSet());
-            np.setSubstructureFingerprint(substructureFingerprinter.getBitFingerprint(ac).asBitSet());
+            np.setPubchemFingerprint(pubchemFingerprinter.getBitFingerprint(ac).asBitSet().toString());
+            np.setCircularFingerprint(circularFingerprinter.getBitFingerprint(ac).asBitSet().toString());
+            np.setKlekotaRothFingerprint(klekotaRothFingerprinter.getBitFingerprint(ac).asBitSet().toString());
+            np.setHybridizationFingerprint(hybridizationFingerprinter.getBitFingerprint(ac).asBitSet().toString());
+            np.setMaccsFingerprint(maccsFingerprinter.getBitFingerprint(ac).asBitSet().toString());
+            np.setShortestPathFingerprint(shortestPathFingerprinter.getBitFingerprint(ac).asBitSet().toString());
+            np.setSubstructureFingerprint(substructureFingerprinter.getBitFingerprint(ac).asBitSet().toString());
 
         } catch (CDKException | UnsupportedOperationException e) {
             e.printStackTrace();
@@ -186,47 +186,55 @@ public class MolecularFeaturesComputationService {
         AtomContainerManipulator.convertImplicitToExplicitHydrogens(ac);
         AtomContainerManipulator.removeNonChiralHydrogens(ac);
 
+        try{
 
-        ac = ErtlFunctionalGroupsFinderUtility.applyFiltersAndPreprocessing(ac, aromaticityModel);
-        functionalGroupsGeneralized = ertlFunctionalGroupsFinder.find(ac, false);
-        if (!functionalGroupsGeneralized.isEmpty()) {
+            ac = ErtlFunctionalGroupsFinderUtility.applyFiltersAndPreprocessing(ac, aromaticityModel);
+            functionalGroupsGeneralized = ertlFunctionalGroupsFinder.find(ac, false);
+            if (!functionalGroupsGeneralized.isEmpty()) {
 
-            np.ertlFunctionalFragments = new Hashtable<>();
-            np.ertlFunctionalFragmentsPseudoSmiles = new Hashtable<>();
+                np.ertlFunctionalFragments = new Hashtable<>();
+                np.ertlFunctionalFragmentsPseudoSmiles = new Hashtable<>();
 
-            HashMap<Long, IAtomContainer> tmpResultsMap = new HashMap<>(functionalGroupsGeneralized.size(), 1);
-            for (IAtomContainer functionalGroup : functionalGroupsGeneralized) {
-                Long hashCode = efgHashGenerator.generate(functionalGroup);
-                if (tmpResultsMap.keySet().contains(hashCode)) {
-                    int tmpFrequency = tmpResultsMap.get(hashCode).getProperty("FREQUENCY");
-                    tmpResultsMap.get(hashCode).setProperty("FREQUENCY", tmpFrequency + 1);
-                } else {
-                    functionalGroup.setProperty("FREQUENCY", 1);
-                    tmpResultsMap.put(hashCode, functionalGroup);
+                HashMap<Long, IAtomContainer> tmpResultsMap = new HashMap<>(functionalGroupsGeneralized.size(), 1);
+                for (IAtomContainer functionalGroup : functionalGroupsGeneralized) {
+                    Long hashCode = efgHashGenerator.generate(functionalGroup);
+                    if (tmpResultsMap.keySet().contains(hashCode)) {
+                        int tmpFrequency = tmpResultsMap.get(hashCode).getProperty("FREQUENCY");
+                        tmpResultsMap.get(hashCode).setProperty("FREQUENCY", tmpFrequency + 1);
+                    } else {
+                        functionalGroup.setProperty("FREQUENCY", 1);
+                        tmpResultsMap.put(hashCode, functionalGroup);
+                    }
                 }
-            }
 
 
-            for (Long tmpHashCode : tmpResultsMap.keySet()) {
-                IAtomContainer tmpFunctionalGroup = tmpResultsMap.get(tmpHashCode);
-                String tmpFGSmilesCode = null;
-                try {
-                    tmpFGSmilesCode = efgSmilesGenerator.create(tmpFunctionalGroup);
+                for (Long tmpHashCode : tmpResultsMap.keySet()) {
+                    IAtomContainer tmpFunctionalGroup = tmpResultsMap.get(tmpHashCode);
+                    String tmpFGSmilesCode = null;
+                    try {
+                        tmpFGSmilesCode = efgSmilesGenerator.create(tmpFunctionalGroup);
 
-                    String tmpFGPseudoSmilesCode = ErtlFunctionalGroupsFinderUtility.createPseudoSmilesCode(tmpFunctionalGroup);
+                        String tmpFGPseudoSmilesCode = ErtlFunctionalGroupsFinderUtility.createPseudoSmilesCode(tmpFunctionalGroup);
 
 
-                    int tmpFrequency = tmpFunctionalGroup.getProperty("FREQUENCY");
+                        int tmpFrequency = tmpFunctionalGroup.getProperty("FREQUENCY");
 
-                    np.ertlFunctionalFragments.put(tmpFGSmilesCode, tmpFrequency);
-                    np.ertlFunctionalFragmentsPseudoSmiles.put(tmpFGPseudoSmilesCode, tmpFrequency);
+                        np.ertlFunctionalFragments.put(tmpFGSmilesCode, tmpFrequency);
+                        np.ertlFunctionalFragmentsPseudoSmiles.put(tmpFGPseudoSmilesCode, tmpFrequency);
 
-                } catch (CDKException e) {
-                    e.printStackTrace();
+                    } catch (CDKException e) {
+                        e.printStackTrace();
+                    }
                 }
-            }
 
+
+
+
+            }
+    }catch(NullPointerException e){
+            System.out.println("Failed to compute the Ertl functional groups for "+np.getInchikey());
         }
+
 
 
 
