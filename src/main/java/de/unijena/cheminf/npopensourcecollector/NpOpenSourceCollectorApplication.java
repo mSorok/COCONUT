@@ -11,6 +11,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
@@ -112,6 +113,12 @@ public class NpOpenSourceCollectorApplication implements CommandLineRunner {
             else if(args[0].equals("generateTSV")){
                 exportService.generateTSV("COCONUT.tsv");
             }
+            else if(args[0].equals("onlyImportCoconutIds")){
+                int index_of_id_file = Arrays.asList(args).indexOf("onlyImportCoconutIds")+1;
+                createCNPidService.importIDs(args[index_of_id_file]);
+                createCNPidService.createIDforNewMolecules();
+
+            }
             else { //Filling from scratch
                 //cleaning the DB before filling it
                 mongoTemplate.getDb().drop();
@@ -145,7 +152,15 @@ public class NpOpenSourceCollectorApplication implements CommandLineRunner {
                     System.out.println("Done fragmenting natural products");
                     SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
                     System.out.println("at: "+formatter.format(new Date())+"\n");
-                    createCNPidService.createDeNovoIDs();
+
+                    if(Arrays.asList(args).contains("importCOCONUTids")) {
+                        //coconut_ids_april2020.csv
+                        int index_of_id_file = Arrays.asList(args).indexOf("importCOCONUTids")+1;
+                        createCNPidService.importIDs(args[index_of_id_file]);
+                        createCNPidService.createIDforNewMolecules();
+                    }else{
+                        createCNPidService.createDeNovoIDs();
+                    }
 
                     // Compute additional features
                     molecularFeaturesComputationService.doWork();
