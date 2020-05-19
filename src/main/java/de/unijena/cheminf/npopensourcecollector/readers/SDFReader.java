@@ -130,6 +130,9 @@ public class SDFReader implements Reader{
                         if(p.toString().toLowerCase().contains("inchikey") || p.toString().toLowerCase().contains("inchi_key") || p.toString().toLowerCase().contains("inchi key")){
                             tmpMolecule.setProperty("ORIGINAL_INCHIKEY", molecule.getProperty(p));
                         }
+                        if(p.toString().toLowerCase().contains("cas")){
+                            tmpMolecule.setProperty("CAS", molecule.getProperty(p));
+                        }
                     }
 
                     molecule = tmpMolecule;

@@ -186,12 +186,6 @@
         </dependency>
         <dependency>
             <groupId>org.openscience.cdk</groupId>
-            <artifactId>cdk-qsarmolecular</artifactId>
-            <version>${cdk.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.openscience.cdk</groupId>
             <artifactId>cdk-qsaratomic</artifactId>
             <version>${cdk.version}</version>
         </dependency>

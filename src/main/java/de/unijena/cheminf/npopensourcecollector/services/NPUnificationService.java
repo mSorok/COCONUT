@@ -174,6 +174,11 @@ public class NPUnificationService {
 
                 }
 
+                //cas
+                if(snp.getCas() != null && snp.getCas() != ""){
+                    unp.setCas(snp.getCas() );
+                }
+
                 //database
                 if(snp.getSource() != null){
                     unp.found_in_databases.add(snp.getSource());

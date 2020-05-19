@@ -32,6 +32,8 @@ public class SourceNaturalProduct {
     //@Indexed(name = "simpleinchikey_index")
     public String simpleInchiKey;
 
+    public String cas;
+
     public Integer heavyAtomNumber;
 
     public Integer totalAtomNumber;
@@ -246,5 +248,13 @@ public class SourceNaturalProduct {
 
     public void setAbsoluteSmiles(String absoluteSmiles) {
         this.absoluteSmiles = absoluteSmiles;
+    }
+
+    public String getCas() {
+        return cas;
+    }
+
+    public void setCas(String cas) {
+        this.cas = cas;
     }
 }

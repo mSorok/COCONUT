@@ -32,6 +32,11 @@ public class AtomContainerToSourceNaturalProductService {
             np.setAbsoluteSmiles(ac.getProperty("ABSOLUTE_SMILES"));
         }
 
+        if(ac.getProperties().containsKey("CAS")) {
+            np.setCas(ac.getProperty("CAS"));
+        }
+
+
         np.setTotalAtomNumber(ac.getAtomCount());
 
         int heavyAtomCount = 0;

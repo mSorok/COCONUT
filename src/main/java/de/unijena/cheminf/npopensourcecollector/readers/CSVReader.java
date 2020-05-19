@@ -79,7 +79,9 @@ public class CSVReader implements Reader {
             if (header != null){
                 //System.out.println(header);
 
-                Integer indexOfID = null; Integer indexOfName = null;
+                Integer indexOfID = null;
+                Integer indexOfName = null;
+                Integer indexOfSynonym = null;
                 Integer indexOfReference = null;
                 Integer indexOfCitation = null;
                 Integer indexOfDOI = null;
@@ -91,6 +93,7 @@ public class CSVReader implements Reader {
                 Integer indexOfSpecies = null;
                 Integer indexOfGeo = null;
                 Integer indexOfCode = null;
+                Integer indexOfCas = null;
 
                 for (String item : header) {
 
@@ -132,6 +135,12 @@ public class CSVReader implements Reader {
                     }
                     if (item.toLowerCase().contains("code") || item.toLowerCase().contains(this.source)) {
                         indexOfCode = header.indexOf(item);
+                    }
+                    if(item.toLowerCase().contains("cas") ){
+                        indexOfCas = header.indexOf(item);
+                    }
+                    if(item.toLowerCase().contains("synonym")){
+                        indexOfSynonym = header.indexOf(item);
                     }
 
 
@@ -294,12 +303,18 @@ public class CSVReader implements Reader {
                                 sourceNaturalProduct.organismText.add(taxa);
 
                                 if (indexOfKingdom != null && dataline.size() >= indexOfKingdom + 1) {
-                                    if(dataline.get(indexOfKingdom).contains("bacteri")){
+                                    if (dataline.get(indexOfKingdom).toLowerCase().contains("bacteri")) {
                                         sourceNaturalProduct.organismText.add("bacteria");
-                                    }else if(dataline.get(indexOfKingdom).contains("fung")){
+                                    } else if (dataline.get(indexOfKingdom).toLowerCase().contains("fung")) {
                                         sourceNaturalProduct.organismText.add("fungi");
+                                    } else if (dataline.get(indexOfKingdom).toLowerCase().contains("plant")) {
+                                        sourceNaturalProduct.organismText.add("plants");
+                                    }else if(dataline.get(indexOfKingdom).toLowerCase().contains("animal")){
+                                        sourceNaturalProduct.organismText.add("animals");
                                     }else{
-                                        sourceNaturalProduct.organismText.add(dataline.get(indexOfKingdom));
+                                        if(!dataline.get(indexOfKingdom).equals("") && !dataline.get(indexOfKingdom).equals("-") && !dataline.get(indexOfKingdom).equals(" ")) {
+                                            sourceNaturalProduct.organismText.add(dataline.get(indexOfKingdom));
+                                        }
                                     }
 
                                 }
@@ -314,13 +329,12 @@ public class CSVReader implements Reader {
                                 }
                                 if (indexOfSpecies != null && dataline.size() >= indexOfSpecies + 1) {
                                     if(!source.equals("np_atlas_2019_12")){
-                                        if(source.equals("vietherb")){
-                                            String [] species = dataline.get(indexOfSpecies).split(",");
+                                        if(source.equals("vietherb") || source.equals("knapsack")){
+                                            String [] species = dataline.get(indexOfSpecies).split(";");
                                             for(String speciesString : species){
-                                                String spm = speciesString.replace("[", "");
-                                                spm = spm.replace("]", "");
-                                                spm = spm.replace("\'", "");
-                                                sourceNaturalProduct.organismText.add(spm);
+                                                    String spm = speciesString.replace("\'", "");
+                                                    sourceNaturalProduct.organismText.add(spm);
+
 
                                             }
                                         }else {
@@ -331,11 +345,32 @@ public class CSVReader implements Reader {
 
                                 }
 
+                                if (indexOfName != null){
+                                    sourceNaturalProduct.setName(dataline.get(indexOfName));
+                                }
+
+                                if (indexOfSynonym != null){
+                                    sourceNaturalProduct.synonyms = new ArrayList<>();
+
+                                    String [] list = dataline.get(indexOfSynonym).split(";");
+                                    for(String e : list){
+                                        sourceNaturalProduct.synonyms.add(e);
+                                    }
+                                    if(indexOfName == null){
+                                        sourceNaturalProduct.setName(list[0]);
+                                    }
+                                }
+
                                 //GEOGRAPHY
                                 sourceNaturalProduct.setContinent(databaseTypeChecker.checkContinent(this.source));
                                 if (indexOfGeo != null && dataline.size() >= indexOfGeo + 1) {
                                     sourceNaturalProduct.geographicLocation = new ArrayList<>();
                                     sourceNaturalProduct.geographicLocation.add(dataline.get(indexOfGeo));
+                                }
+
+                                //CAS
+                                if(indexOfCas !=null){
+                                    sourceNaturalProduct.setCas(dataline.get(indexOfCas));
                                 }
 
                                 //citation reference and doi

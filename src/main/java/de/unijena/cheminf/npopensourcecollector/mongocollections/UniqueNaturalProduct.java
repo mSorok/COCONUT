@@ -43,6 +43,8 @@ public class UniqueNaturalProduct {
 
     public Hashtable<String, HashSet<String>> absolute_smiles;
 
+    public String cas;
+
     public Integer contains_ring_sugars;
 
     public Integer contains_linear_sugars;
@@ -877,5 +879,13 @@ public class UniqueNaturalProduct {
 
     public void setDeep_smiles(String deep_smiles) {
         this.deep_smiles = deep_smiles;
+    }
+
+    public String getCas() {
+        return cas;
+    }
+
+    public void setCas(String cas) {
+        this.cas = cas;
     }
 }
