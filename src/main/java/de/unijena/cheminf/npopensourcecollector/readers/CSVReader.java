@@ -173,23 +173,49 @@ public class CSVReader implements Reader {
 
                         if (indexOfSMILES != null && dataline.size() >= indexOfSMILES + 1) {
 
-                            molecule = sp.parseSmiles(dataline.get(indexOfSMILES));
-
-                            molecule.setProperty("FILE_ORIGIN", file.getName().replace(".csv", ""));
-                            molecule.setProperty("SOURCE", source);
-                            molecule.setProperty("ORIGINAL_SMILES", dataline.get(indexOfSMILES));
-
-
                             try {
-                                if (indexOfInchi != null) {
-                                    molecule.setProperty("ORIGINAL_INCHI", dataline.get(indexOfInchi));
+                                molecule = sp.parseSmiles(dataline.get(indexOfSMILES));
+
+                                molecule.setProperty("FILE_ORIGIN", file.getName().replace(".csv", ""));
+                                molecule.setProperty("SOURCE", source);
+                                molecule.setProperty("ORIGINAL_SMILES", dataline.get(indexOfSMILES));
+
+
+                                try {
+                                    if (indexOfInchi != null) {
+                                        molecule.setProperty("ORIGINAL_INCHI", dataline.get(indexOfInchi));
+
+                                    }
+                                    if (indexOfInchikey != null) {
+                                        molecule.setProperty("ORIGINAL_INCHIKEY", dataline.get(indexOfInchikey));
+                                    }
+                                } catch (IndexOutOfBoundsException e) {
+                                    System.out.println("Something went wrong with indexes in " + file.getName());
+                                    System.out.println(count);
+                                    System.out.println(dataline.toString());
+                                }
+                            }catch (InvalidSmilesException e){
+                                //try to read the inchi at least
+                                if (indexOfInchi != null && dataline.size() >= indexOfInchi + 1){
+                                    // READING InCHI
+                                    InChIGeneratorFactory factory = InChIGeneratorFactory.getInstance();
+                                    InChIToStructure intostruct = factory.getInChIToStructure(dataline.get(indexOfInchi), DefaultChemObjectBuilder.getInstance());
+
+                                    INCHI_RET ret = intostruct.getReturnStatus();
+                                    if (ret == INCHI_RET.WARNING) {
+                                        // Structure generated, but with warning message
+                                        System.out.println("InChI warning: " + intostruct.getMessage());
+                                    } else if (ret != INCHI_RET.OKAY) {
+                                        // Structure generation failed
+                                        throw new CDKException("Structure generation failed failed: " + ret.toString() + " [" + intostruct.getMessage() + "]");
+                                    }
+
+                                    molecule = intostruct.getAtomContainer();
+
+                                    molecule.setProperty("FILE_ORIGIN", file.getName().replace(".csv", ""));
+                                    molecule.setProperty("SOURCE", source);
 
                                 }
-                                if (indexOfInchikey != null) {
-                                    molecule.setProperty("ORIGINAL_INCHIKEY", dataline.get(indexOfInchikey));
-                                }
-                            }catch(IndexOutOfBoundsException e){
-                                System.out.println("Something went wrong with indexes in "+file.getName());
                             }
 
                         } else if (indexOfInchi != null && dataline.size() >= indexOfInchi + 1) {
@@ -262,11 +288,18 @@ public class CSVReader implements Reader {
                                 }
 
                                 String simpleSmiles = smilesGenerator.create(molecule);
-                                String absoluteSmiles = absoluteSmilesGenerator.create(molecule);
                                 molecule.setProperty("SIMPLE_SMILES", simpleSmiles);
-                                if (!absoluteSmiles.equals(simpleSmiles) && absoluteSmiles.contains("@")) {
-                                    molecule.setProperty("ABSOLUTE_SMILES", absoluteSmiles);
+                                try {
+                                    String absoluteSmiles = absoluteSmilesGenerator.create(molecule);
+                                    if (!absoluteSmiles.equals(simpleSmiles) && absoluteSmiles.contains("@")) {
+                                        molecule.setProperty("ABSOLUTE_SMILES", absoluteSmiles);
+                                    }
+
+                                }catch(IllegalArgumentException e){
+                                    System.out.println("Could not make smiles for "+simpleSmiles);
                                 }
+
+
 
 
                                 DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd");

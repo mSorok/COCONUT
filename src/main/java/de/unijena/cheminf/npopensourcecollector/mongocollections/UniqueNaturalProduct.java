@@ -87,6 +87,8 @@ public class UniqueNaturalProduct {
 
     public Integer min_number_of_rings;
 
+    public Integer number_of_rings;
+
     public Integer number_repeated_fragments;
 
     public Integer sugar_free_heavy_atom_number;
@@ -126,6 +128,24 @@ public class UniqueNaturalProduct {
     public String shortestPathFingerprint;
 
     public String substructureFingerprint;
+
+    public String extendedFingerprint;
+
+    public BitSet pubchemBits;
+
+    public BitSet extendedBits;
+
+    public BitSet maccsBits;
+
+    public BitSet circularBits;
+
+    public BitSet substructureBits;
+
+    public BitSet shortestPathBits;
+
+    public String pubchemBitsString;
+
+
 
 
 
@@ -887,5 +907,77 @@ public class UniqueNaturalProduct {
 
     public void setCas(String cas) {
         this.cas = cas;
+    }
+
+    public String getExtendedFingerprint() {
+        return extendedFingerprint;
+    }
+
+    public void setExtendedFingerprint(String extendedFingerprint) {
+        this.extendedFingerprint = extendedFingerprint;
+    }
+
+    public Integer getNumber_of_rings() {
+        return number_of_rings;
+    }
+
+    public void setNumber_of_rings(Integer number_of_rings) {
+        this.number_of_rings = number_of_rings;
+    }
+
+    public BitSet getPubchemBits() {
+        return pubchemBits;
+    }
+
+    public void setPubchemBits(BitSet pubchemBits) {
+        this.pubchemBits = pubchemBits;
+    }
+
+    public BitSet getExtendedBits() {
+        return extendedBits;
+    }
+
+    public void setExtendedBits(BitSet extendedBits) {
+        this.extendedBits = extendedBits;
+    }
+
+    public BitSet getMaccsBits() {
+        return maccsBits;
+    }
+
+    public void setMaccsBits(BitSet maccsBits) {
+        this.maccsBits = maccsBits;
+    }
+
+    public BitSet getCircularBits() {
+        return circularBits;
+    }
+
+    public void setCircularBits(BitSet circularBits) {
+        this.circularBits = circularBits;
+    }
+
+    public BitSet getSubstructureBits() {
+        return substructureBits;
+    }
+
+    public void setSubstructureBits(BitSet substructureBits) {
+        this.substructureBits = substructureBits;
+    }
+
+    public BitSet getShortestPathBits() {
+        return shortestPathBits;
+    }
+
+    public void setShortestPathBits(BitSet shortestPathBits) {
+        this.shortestPathBits = shortestPathBits;
+    }
+
+    public String getPubchemBitsString() {
+        return pubchemBitsString;
+    }
+
+    public void setPubchemBitsString(String pubchemBitsString) {
+        this.pubchemBitsString = pubchemBitsString;
     }
 }

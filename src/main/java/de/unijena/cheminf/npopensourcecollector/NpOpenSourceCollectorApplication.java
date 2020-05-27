@@ -65,7 +65,7 @@ public class NpOpenSourceCollectorApplication implements CommandLineRunner {
 
 
 
-        System.out.println("Code version from 30th april 2020");
+        System.out.println("Code version from 26th of May 2020");
 
         if (args.length > 0) {
 
@@ -119,6 +119,10 @@ public class NpOpenSourceCollectorApplication implements CommandLineRunner {
                 createCNPidService.createIDforNewMolecules();
 
             }
+            else if(args[0].equals("updateBitFingerprints")){
+
+                molecularFeaturesComputationService.convertToBitSet();
+            }
             else { //Filling from scratch
                 //cleaning the DB before filling it
                 mongoTemplate.getDb().drop();
@@ -169,6 +173,8 @@ public class NpOpenSourceCollectorApplication implements CommandLineRunner {
                     //read and insert synthetic molecules
                     readerService.readSyntheticMoleculesAndInsertInMongo(args[1]); //tsv file
                     molecularFeaturesComputationService.doWorkForSM();
+
+                    molecularFeaturesComputationService.convertToBitSet();
 
 /*
                     //compute similarities between natural products

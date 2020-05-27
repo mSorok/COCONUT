@@ -29,11 +29,7 @@ import org.openscience.cdk.tools.manipulator.AtomTypeManipulator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.List;
-
+import java.util.*;
 
 
 @Service
@@ -65,6 +61,8 @@ public class MolecularFeaturesComputationService {
 
     SubstructureFingerprinter substructureFingerprinter = new SubstructureFingerprinter();
 
+    ExtendedFingerprinter extendedFingerprinter = new ExtendedFingerprinter();
+
     Aromaticity aromaticityModel = new Aromaticity(ElectronDonation.daylight(), Cycles.or(Cycles.all(), Cycles.cdkAromaticSet()));
     ErtlFunctionalGroupsFinder ertlFunctionalGroupsFinder  = ErtlFunctionalGroupsFinderUtility.getErtlFunctionalGroupsFinderGeneralizingMode();
     MoleculeHashGenerator efgHashGenerator = ErtlFunctionalGroupsFinderUtility.getFunctionalGroupHashGenerator();
@@ -72,6 +70,70 @@ public class MolecularFeaturesComputationService {
 
 
 
+    public void convertToBitSet(){
+        System.out.println("Convert bit fingerprints to bitsets");
+
+        List<UniqueNaturalProduct> allNP = uniqueNaturalProductRepository.findAll();
+
+        for(UniqueNaturalProduct np : allNP) {
+            if( np.pubchemBitsString == null || np.pubchemBitsString == "") {
+
+                IAtomContainer ac = atomContainerToUniqueNaturalProductService.createAtomContainer(np);
+
+                // Addition of implicit hydrogens & atom typer
+                CDKAtomTypeMatcher matcher = CDKAtomTypeMatcher.getInstance(ac.getBuilder());
+                CDKHydrogenAdder adder = CDKHydrogenAdder.getInstance(ac.getBuilder());
+                for (int j = 0; j < ac.getAtomCount(); j++) {
+                    IAtom atom = ac.getAtom(j);
+                    IAtomType type = null;
+                    try {
+                        type = matcher.findMatchingAtomType(ac, atom);
+                        AtomTypeManipulator.configure(atom, type);
+                    } catch (CDKException e) {
+                        e.printStackTrace();
+                    }
+
+                }
+
+                try {
+                    adder.addImplicitHydrogens(ac);
+                } catch (CDKException e) {
+                    e.printStackTrace();
+                }
+                AtomContainerManipulator.convertImplicitToExplicitHydrogens(ac);
+                AtomContainerManipulator.removeNonChiralHydrogens(ac);
+
+
+                try {
+
+                    //for PubChem
+
+                    BitSet bitsOn = pubchemFingerprinter.getBitFingerprint(ac).asBitSet();
+                    String pubchemBitString = "";
+
+                    for (int i = 0; i <= bitsOn.length(); i++) {
+                        if (bitsOn.get(i)) {
+                            pubchemBitString += "1";
+                        } else {
+                            pubchemBitString += "0";
+                        }
+                    }
+
+                    np.setPubchemBits(pubchemFingerprinter.getFingerprint(ac));
+                    np.setPubchemBitsString(pubchemBitString);
+
+                    uniqueNaturalProductRepository.save(np);
+
+
+                } catch (CDKException | UnsupportedOperationException e) {
+                    e.printStackTrace();
+                }
+            }
+
+        }
+
+        System.out.println("done");
+    }
 
 
 
@@ -150,6 +212,8 @@ public class MolecularFeaturesComputationService {
             np.setMaccsFingerprint(maccsFingerprinter.getBitFingerprint(ac).asBitSet().toString());
             np.setShortestPathFingerprint(shortestPathFingerprinter.getBitFingerprint(ac).asBitSet().toString());
             np.setSubstructureFingerprint(substructureFingerprinter.getBitFingerprint(ac).asBitSet().toString());
+            np.setExtendedFingerprint(extendedFingerprinter.getBitFingerprint(ac).asBitSet().toString());
+
 
         } catch (CDKException | UnsupportedOperationException e) {
             e.printStackTrace();

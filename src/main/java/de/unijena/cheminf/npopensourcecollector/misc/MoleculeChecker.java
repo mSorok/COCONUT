@@ -127,7 +127,7 @@ public class MoleculeChecker {
                 molecule = sp.parseSmiles(smi);
                 molecule.setProperties(properties);
                 molecule.setID(id);
-            } catch (CDKException e) {
+            } catch (CDKException | IllegalArgumentException e) {
                 e.printStackTrace();
             }
 
