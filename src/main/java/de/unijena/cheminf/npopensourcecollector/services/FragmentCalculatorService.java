@@ -59,7 +59,7 @@ public class FragmentCalculatorService {
     public void doParallelizedWork(int nbThreads){
         System.out.println("Start parallel fragmentation of natural products");
 
-        sugarRemovalService.getSugarPatterns();
+        sugarRemovalService.prepareSugars();
 
         try{
 
@@ -122,12 +122,14 @@ public class FragmentCalculatorService {
 
         System.out.println("Start fragmenting natural products for uncomputed");
 
-        sugarRemovalService.getSugarPatterns();
+        //sugarRemovalService.getSugarPatterns();
 
 
         List<UniqueNaturalProduct> allNP = uniqueNaturalProductRepository.findAllByNPLScoreComputed();
 
         System.out.println("NUMBER OF ALL NP FOUND "+allNP.size());
+
+        sugarRemovalService.prepareSugars();
 
 
         int count=1;
@@ -138,7 +140,7 @@ public class FragmentCalculatorService {
 
             IAtomContainer acFull = atomContainerToUniqueNaturalProductService.createAtomContainer(np);
 
-            IAtomContainer acSugarFree = sugarRemovalService.removeSugars(acFull);
+            IAtomContainer acSugarFree = sugarRemovalService.removeSugarsFromAtomContainer(acFull);
 
             if(acSugarFree != null) {
 

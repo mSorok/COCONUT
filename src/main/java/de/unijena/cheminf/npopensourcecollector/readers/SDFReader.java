@@ -16,6 +16,7 @@ import org.openscience.cdk.interfaces.IAtom;
 import org.openscience.cdk.interfaces.IAtomContainer;
 import org.openscience.cdk.interfaces.IBond;
 import org.openscience.cdk.io.iterator.IteratingSDFReader;
+import org.openscience.cdk.isomorphism.AtomMatcher;
 import org.openscience.cdk.silent.SilentChemObjectBuilder;
 import org.openscience.cdk.smiles.SmiFlavor;
 import org.openscience.cdk.smiles.SmilesGenerator;
@@ -145,6 +146,8 @@ public class SDFReader implements Reader{
                     }catch (CDKException e){
                         e.printStackTrace();
                     }
+
+
 
 
 

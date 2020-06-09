@@ -52,6 +52,9 @@ public class NpOpenSourceCollectorApplication implements CommandLineRunner {
     @Autowired
     ExportService exportService;
 
+    @Autowired
+    AnnotationLevelService annotationLevelService;
+
 
 
     public static void main(String[] args) {
@@ -122,7 +125,10 @@ public class NpOpenSourceCollectorApplication implements CommandLineRunner {
             else if(args[0].equals("updateBitFingerprints")){
 
                 molecularFeaturesComputationService.convertToBitSet();
+            }else if (args[0].equals("evaluateAnnotation")){
+                annotationLevelService.doWorkForAll();
             }
+
             else { //Filling from scratch
                 //cleaning the DB before filling it
                 mongoTemplate.getDb().drop();
@@ -166,15 +172,18 @@ public class NpOpenSourceCollectorApplication implements CommandLineRunner {
                         createCNPidService.createDeNovoIDs();
                     }
 
+                    //evaluate annotation level
+                    annotationLevelService.doWorkForAll();
+
                     // Compute additional features
                     molecularFeaturesComputationService.doWork();
                     updaterService.updateSourceNaturalProductsParallelized(42);
 
                     //read and insert synthetic molecules
-                    readerService.readSyntheticMoleculesAndInsertInMongo(args[1]); //tsv file
-                    molecularFeaturesComputationService.doWorkForSM();
+                    //readerService.readSyntheticMoleculesAndInsertInMongo(args[1]); //tsv file
+                    //molecularFeaturesComputationService.doWorkForSM();
 
-                    molecularFeaturesComputationService.convertToBitSet();
+                    //molecularFeaturesComputationService.convertToBitSet();
 
 /*
                     //compute similarities between natural products

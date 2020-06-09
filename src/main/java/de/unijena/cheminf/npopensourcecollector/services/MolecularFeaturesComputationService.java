@@ -51,13 +51,6 @@ public class MolecularFeaturesComputationService {
 
     CircularFingerprinter circularFingerprinter = new CircularFingerprinter(CircularFingerprinter.CLASS_ECFP4);
 
-    KlekotaRothFingerprinter klekotaRothFingerprinter = new KlekotaRothFingerprinter();
-
-    HybridizationFingerprinter hybridizationFingerprinter = new HybridizationFingerprinter();
-
-    MACCSFingerprinter maccsFingerprinter = new MACCSFingerprinter();
-
-    ShortestPathFingerprinter shortestPathFingerprinter = new ShortestPathFingerprinter();
 
     SubstructureFingerprinter substructureFingerprinter = new SubstructureFingerprinter();
 
@@ -67,6 +60,7 @@ public class MolecularFeaturesComputationService {
     ErtlFunctionalGroupsFinder ertlFunctionalGroupsFinder  = ErtlFunctionalGroupsFinderUtility.getErtlFunctionalGroupsFinderGeneralizingMode();
     MoleculeHashGenerator efgHashGenerator = ErtlFunctionalGroupsFinderUtility.getFunctionalGroupHashGenerator();
     SmilesGenerator efgSmilesGenerator = new SmilesGenerator(SmiFlavor.Unique | SmiFlavor.UseAromaticSymbols);
+
 
 
 
@@ -119,8 +113,10 @@ public class MolecularFeaturesComputationService {
                         }
                     }
 
-                    np.setPubchemBits(pubchemFingerprinter.getFingerprint(ac));
+                    np.setPubchemBits(bitsOn.toByteArray());
                     np.setPubchemBitsString(pubchemBitString);
+
+                    np = computeFingerprints(np);
 
                     uniqueNaturalProductRepository.save(np);
 
@@ -153,6 +149,7 @@ public class MolecularFeaturesComputationService {
 
 
 
+
     public void doWork(){
         System.out.println("Calculating additional features for unique molecules");
 
@@ -162,7 +159,7 @@ public class MolecularFeaturesComputationService {
         for(UniqueNaturalProduct np : allNP){
 
             np = computeFeatures(np);
-            np = computeFingerprints(np);
+            //np = computeFingerprints(np);
             np = computeErtlFunctionalGroups(np);
 
             uniqueNaturalProductRepository.save(np);
@@ -205,14 +202,79 @@ public class MolecularFeaturesComputationService {
 
         try {
 
-            np.setPubchemFingerprint(pubchemFingerprinter.getBitFingerprint(ac).asBitSet().toString());
-            np.setCircularFingerprint(circularFingerprinter.getBitFingerprint(ac).asBitSet().toString());
-            np.setKlekotaRothFingerprint(klekotaRothFingerprinter.getBitFingerprint(ac).asBitSet().toString());
-            np.setHybridizationFingerprint(hybridizationFingerprinter.getBitFingerprint(ac).asBitSet().toString());
-            np.setMaccsFingerprint(maccsFingerprinter.getBitFingerprint(ac).asBitSet().toString());
-            np.setShortestPathFingerprint(shortestPathFingerprinter.getBitFingerprint(ac).asBitSet().toString());
-            np.setSubstructureFingerprint(substructureFingerprinter.getBitFingerprint(ac).asBitSet().toString());
-            np.setExtendedFingerprint(extendedFingerprinter.getBitFingerprint(ac).asBitSet().toString());
+            String s = pubchemFingerprinter.getBitFingerprint(ac).asBitSet().toString();
+            ArrayList<Integer> pcl = new ArrayList<>();
+            s = s.replace(" ", "");s = s.replace("\"", "");s = s.replace("{", "");s = s.replace("}", "");
+            String [] sl = s.split(",");
+            for(String c : sl){
+                try {
+                    pcl.add(Integer.parseInt(c));
+                }catch (NumberFormatException e){ e.printStackTrace(); }
+            }
+            np.setPubchemFingerprint(pcl);
+
+
+            s = circularFingerprinter.getBitFingerprint(ac).asBitSet().toString();
+            pcl = new ArrayList<>();
+            s = s.replace(" ", "");s = s.replace("\"", "");s = s.replace("{", "");s = s.replace("}", "");
+            sl = s.split(",");
+            for(String c : sl){
+                try {
+                    pcl.add(Integer.parseInt(c));
+                }catch (NumberFormatException e){ e.printStackTrace(); }
+            }
+            np.setCircularFingerprint(pcl);
+
+            s = substructureFingerprinter.getBitFingerprint(ac).asBitSet().toString();
+            pcl = new ArrayList<>();
+            s = s.replace(" ", "");s = s.replace("\"", "");s = s.replace("{", "");s = s.replace("}", "");
+            sl = s.split(",");
+            for(String c : sl){
+                try {
+                    pcl.add(Integer.parseInt(c));
+                }catch (NumberFormatException e){ e.printStackTrace(); }
+            }
+            np.setSubstructureFingerprint(pcl);
+
+
+            s = extendedFingerprinter.getBitFingerprint(ac).asBitSet().toString();
+            pcl = new ArrayList<>();
+            s = s.replace(" ", "");s = s.replace("\"", "");s = s.replace("{", "");s = s.replace("}", "");
+            sl = s.split(",");
+            for(String c : sl){
+                try {
+                    pcl.add(Integer.parseInt(c));
+                }catch (NumberFormatException e){ e.printStackTrace(); }
+            }
+            np.setExtendedFingerprint(pcl);
+
+
+
+            //Bits and String for PubChem
+
+            try {
+                //for PubChem
+
+                BitSet bitsOn = pubchemFingerprinter.getBitFingerprint(ac).asBitSet();
+                String pubchemBitString = "";
+
+                for (int i = 0; i <= bitsOn.length(); i++) {
+                    if (bitsOn.get(i)) {
+                        pubchemBitString += "1";
+                    } else {
+                        pubchemBitString += "0";
+                    }
+                }
+
+                np.setPubchemBits( bitsOn.toByteArray());
+                np.setPubchemBitsString(pubchemBitString);
+
+                np = computeFingerprints(np);
+
+
+            } catch (CDKException | UnsupportedOperationException e) {
+                e.printStackTrace();
+            }
 
 
         } catch (CDKException | UnsupportedOperationException e) {

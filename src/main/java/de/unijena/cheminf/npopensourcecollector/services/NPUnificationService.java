@@ -4,25 +4,27 @@ import de.unijena.cheminf.npopensourcecollector.mongocollections.SourceNaturalPr
 import de.unijena.cheminf.npopensourcecollector.mongocollections.SourceNaturalProductRepository;
 import de.unijena.cheminf.npopensourcecollector.mongocollections.UniqueNaturalProduct;
 import de.unijena.cheminf.npopensourcecollector.mongocollections.UniqueNaturalProductRepository;
+import org.openscience.cdk.atomtype.CDKAtomTypeMatcher;
 import org.openscience.cdk.exception.CDKException;
+import org.openscience.cdk.fingerprint.CircularFingerprinter;
+import org.openscience.cdk.fingerprint.ExtendedFingerprinter;
+import org.openscience.cdk.fingerprint.PubchemFingerprinter;
+import org.openscience.cdk.fingerprint.SubstructureFingerprinter;
 import org.openscience.cdk.graph.Cycles;
-import org.openscience.cdk.interfaces.IAtom;
-import org.openscience.cdk.interfaces.IAtomContainer;
-import org.openscience.cdk.interfaces.IBond;
-import org.openscience.cdk.interfaces.IRingSet;
+import org.openscience.cdk.interfaces.*;
 import org.openscience.cdk.ringsearch.AllRingsFinder;
+import org.openscience.cdk.silent.SilentChemObjectBuilder;
 import org.openscience.cdk.smarts.Smarts;
 import org.openscience.cdk.smiles.SmiFlavor;
 import org.openscience.cdk.smiles.SmilesGenerator;
+import org.openscience.cdk.tools.CDKHydrogenAdder;
 import org.openscience.cdk.tools.manipulator.AtomContainerManipulator;
+import org.openscience.cdk.tools.manipulator.AtomTypeManipulator;
 import org.openscience.cdk.tools.manipulator.MolecularFormulaManipulator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Hashtable;
-import java.util.List;
+import java.util.*;
 import java.util.function.IntBinaryOperator;
 
 @Service
@@ -36,6 +38,18 @@ public class NPUnificationService {
 
     @Autowired
     AtomContainerToUniqueNaturalProductService atomContainerToUniqueNaturalProductService;
+
+
+    PubchemFingerprinter pubchemFingerprinter = new PubchemFingerprinter( SilentChemObjectBuilder.getInstance() );
+
+    CircularFingerprinter circularFingerprinter = new CircularFingerprinter(CircularFingerprinter.CLASS_ECFP4);
+
+
+    SubstructureFingerprinter substructureFingerprinter = new SubstructureFingerprinter();
+
+    ExtendedFingerprinter extendedFingerprinter = new ExtendedFingerprinter();
+
+
 
     private ArrayList<String> sourceNames;
 
@@ -71,6 +85,9 @@ public class NPUnificationService {
 
             unp = uniqueNaturalProductRepository.save(unp);
 
+
+            unp.name = "";
+
             unp.synonyms = new HashSet<>();
             unp.textTaxa = new HashSet<>();
             unp.taxid = new HashSet<>();
@@ -90,7 +107,7 @@ public class NPUnificationService {
                 //checking if name doesn't contain DB name
                boolean nameIsReal = true;
                 for(String dbname: this.sourceNames){
-                    if(snp.getName() != null && snp.getName().toLowerCase().contains(dbname)){
+                    if(snp.getName() != null && (snp.getName().toLowerCase().contains(dbname) || snp.getName().startsWith("MLS") || snp.getName().startsWith("SMR") || snp.getName().contains("MLSMR"))){
                         nameIsReal=false;
                     }
                 }
@@ -113,12 +130,14 @@ public class NPUnificationService {
 
 
                 }
-                else if( unp.getName() != null && snp.getName() != null){
-                    if(snp.getSource().equals("chebi")){
+                else if( unp.getName() != null && unp.getName() != "" && snp.getName() != null){
+                    if(snp.getSource().toLowerCase().contains("chebi")){
 
                         //replace name by ChebiName
                         unp.synonyms.add(unp.name);
                         unp.name = snp.getName().trim();
+
+                        unp.nameTrustLevel=2;
                     }
                     else {
                         unp.synonyms.add(snp.getName().trim());
@@ -211,7 +230,7 @@ public class NPUnificationService {
             unp = uniqueNaturalProductRepository.save(unp);
 
             //compute molecular parameters for the UniqueNaturalProduct
-
+            unp = computeFingerprints(unp);
             unp = computeAdditionalMolecularFeatures(unp);
             uniqueNaturalProductRepository.save(unp);
 
@@ -236,7 +255,6 @@ public class NPUnificationService {
 
         IAtomContainer im = atomContainerToUniqueNaturalProductService.createAtomContainer(m);
 
-        //TODO min cycle base (min number of rings)
 
         // count rings
         try {
@@ -302,6 +320,110 @@ public class NPUnificationService {
         }
         return tmpArray;
     }
+
+
+
+
+
+    public UniqueNaturalProduct computeFingerprints(UniqueNaturalProduct np){
+
+
+
+        IAtomContainer ac = atomContainerToUniqueNaturalProductService.createAtomContainer(np);
+
+        // Addition of implicit hydrogens & atom typer
+        CDKAtomTypeMatcher matcher = CDKAtomTypeMatcher.getInstance(ac.getBuilder());
+        CDKHydrogenAdder adder = CDKHydrogenAdder.getInstance(ac.getBuilder() );
+        for (int j = 0; j < ac.getAtomCount(); j++) {
+            IAtom atom = ac.getAtom(j);
+            IAtomType type = null;
+            try {
+                type = matcher.findMatchingAtomType(ac, atom);
+                AtomTypeManipulator.configure(atom, type);
+            } catch (CDKException e) {
+                e.printStackTrace();
+            }
+
+        }
+
+        try {
+            adder.addImplicitHydrogens(ac);
+        } catch (CDKException e) {
+            e.printStackTrace();
+        }
+        AtomContainerManipulator.convertImplicitToExplicitHydrogens(ac);
+        AtomContainerManipulator.removeNonChiralHydrogens(ac);
+
+        try {
+
+            String s = pubchemFingerprinter.getBitFingerprint(ac).asBitSet().toString();
+            ArrayList<Integer> pcl = new ArrayList<>();
+            s = s.replace(" ", "");s = s.replace("\"", "");s = s.replace("{", "");s = s.replace("}", "");
+            String [] sl = s.split(",");
+            for(String c : sl){
+                try {
+                    pcl.add(Integer.parseInt(c));
+                }catch (NumberFormatException e){ e.printStackTrace(); }
+            }
+            np.setPubchemFingerprint(pcl);
+
+
+            s = circularFingerprinter.getBitFingerprint(ac).asBitSet().toString();
+            pcl = new ArrayList<>();
+            s = s.replace(" ", "");s = s.replace("\"", "");s = s.replace("{", "");s = s.replace("}", "");
+            sl = s.split(",");
+            for(String c : sl){
+                try {
+                    pcl.add(Integer.parseInt(c));
+                }catch (NumberFormatException e){ e.printStackTrace(); }
+            }
+            np.setCircularFingerprint(pcl);
+
+            s = extendedFingerprinter.getBitFingerprint(ac).asBitSet().toString();
+            pcl = new ArrayList<>();
+            s = s.replace(" ", "");s = s.replace("\"", "");s = s.replace("{", "");s = s.replace("}", "");
+            sl = s.split(",");
+            for(String c : sl){
+                try {
+                    pcl.add(Integer.parseInt(c));
+                }catch (NumberFormatException e){ e.printStackTrace(); }
+            }
+            np.setExtendedFingerprint(pcl);
+
+
+
+            //Bits and String for PubChem
+
+            try {
+                //for PubChem
+
+                BitSet bitsOn = pubchemFingerprinter.getBitFingerprint(ac).asBitSet();
+                String pubchemBitString = "";
+
+                for (int i = 0; i <= bitsOn.length(); i++) {
+                    if (bitsOn.get(i)) {
+                        pubchemBitString += "1";
+                    } else {
+                        pubchemBitString += "0";
+                    }
+                }
+
+                np.setPubchemBits(bitsOn.toByteArray());
+                np.setPubchemBitsString(pubchemBitString);
+
+
+
+            } catch (CDKException | UnsupportedOperationException e) {
+                e.printStackTrace();
+            }
+
+
+        } catch (CDKException | UnsupportedOperationException e) {
+            e.printStackTrace();
+        }
+        return np;
+    }
+
 
 
 }

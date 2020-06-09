@@ -74,6 +74,8 @@ public class FragmentCalculatorTask implements Runnable {
         SmilesGenerator smilesGenerator = new SmilesGenerator(SmiFlavor.Unique); //Unique - canonical SMILES string, different atom ordering produces the same* SMILES. No isotope or stereochemistry encoded.
 
 
+        //sugarRemovalService.prepareSugars();
+
         System.out.println("Computing NP fragments for task "+taskid);
         for(UniqueNaturalProduct np : batchOfNaturalProducts){
 
@@ -84,7 +86,7 @@ public class FragmentCalculatorTask implements Runnable {
 
             IAtomContainer acFull = atomContainerToUniqueNaturalProductService.createAtomContainer(np);
 
-            IAtomContainer acSugarFree = this.sugarRemovalService.removeSugars(acFull);
+            IAtomContainer acSugarFree = this.sugarRemovalService.removeSugarsFromAtomContainer(acFull);
 
             if(acSugarFree != null) {
 
@@ -92,8 +94,8 @@ public class FragmentCalculatorTask implements Runnable {
                 try {
                     if(!universalIsomorphismTester.isIsomorph(acSugarFree, acFull)) {
                         np.setContains_sugar(1);
-                        np.setContains_ring_sugars(acSugarFree.getProperty("CONTAINS_RING_SUGAR"));
                         np.setContains_linear_sugars(acSugarFree.getProperty("CONTAINS_LINEAR_SUGAR"));
+                        np.setContains_ring_sugars(acSugarFree.getProperty("CONTAINS_CIRCULAR_SUGAR"));
                     }
                     else{
                         //molecule doesn't contain sugar

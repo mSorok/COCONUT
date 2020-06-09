@@ -32,7 +32,7 @@ public class MoleculeChecker {
     private final String[] check = {"C", "H", "N", "O", "P", "S", "Cl", "F", "As", "Se", "Br", "I", "B", "Na", "Si", "K", "Fe"};
     private final HashSet<String> symbols2Check = new HashSet<String>(Arrays.asList(check));
 
-    private final String[] forbiddenInchiKeys = {"OOHPORRAEMMMCX-UHFFFAOYSA-N"};
+    private final String[] forbiddenInchiKeys = {"OOHPORRAEMMMCX-UHFFFAOYSA-N", "ATSPGPYEGAPMOB-UHFFFAOYSA-N"};
     private final  HashSet<String> inchis2Check = new HashSet<String>(Arrays.asList(forbiddenInchiKeys));
 
 

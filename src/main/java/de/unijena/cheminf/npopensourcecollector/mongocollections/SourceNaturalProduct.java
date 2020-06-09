@@ -5,6 +5,7 @@ import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.ArrayList;
+import java.util.BitSet;
 
 
 @Document
@@ -59,7 +60,6 @@ public class SourceNaturalProduct {
     public String name;
 
     public ArrayList<String> synonyms;
-
 
 
 
@@ -257,4 +257,7 @@ public class SourceNaturalProduct {
     public void setCas(String cas) {
         this.cas = cas;
     }
+
+
+
 }
