@@ -55,6 +55,9 @@ public class NpOpenSourceCollectorApplication implements CommandLineRunner {
     @Autowired
     AnnotationLevelService annotationLevelService;
 
+    @Autowired
+    NamingService namingService;
+
 
 
     public static void main(String[] args) {
@@ -68,7 +71,7 @@ public class NpOpenSourceCollectorApplication implements CommandLineRunner {
 
 
 
-        System.out.println("Code version from 26th of May 2020");
+        System.out.println("Code version from 18th of June 2020");
 
         if (args.length > 0) {
 
@@ -82,6 +85,28 @@ public class NpOpenSourceCollectorApplication implements CommandLineRunner {
                 }
 
             }
+            else if(args[0].equals("cleanRecomputeMissing")){
+
+
+                System.out.println("Fragmenting everything from scratch");
+                fragmentCalculatorService.doParallelizedWork(42);
+
+                System.out.println("Done fragmenting natural products");
+                SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
+                System.out.println("at: "+formatter.format(new Date())+"\n");
+
+
+                //evaluate annotation level
+                System.out.println("evaluating annotation levels");
+                annotationLevelService.doWorkForAll();
+                System.out.println("done");
+
+                // Compute additional features
+                molecularFeaturesComputationService.doWork();
+                updaterService.updateSourceNaturalProductsParallelized(42);
+
+
+            }
             else if(args[0].equals("addCNPid")){
 
                 System.out.println("Creating de novo COCONUT IDs");
@@ -92,6 +117,19 @@ public class NpOpenSourceCollectorApplication implements CommandLineRunner {
                     TimeUnit.MINUTES.sleep(1);
                 }
 
+            }
+            else if(args[0].equals("updateCNPid")){
+                System.out.println("Updating COCONUT ids");
+                createCNPidService.clearIDs();
+                createCNPidService.importIDs("coconut_ids_april2020.csv");
+                createCNPidService.createIDforNewMolecules();
+
+                updaterService.updateSourceNaturalProductsParallelized(40);
+                while (!updaterService.processFinished()) {
+                    System.out.println("I'm waiting");
+                    TimeUnit.MINUTES.sleep(1);
+                }
+                System.out.println("done");
             }
             else if(args[0].equals("runOnlySimilarity")){
                 //compute similarities between natural products
@@ -127,6 +165,8 @@ public class NpOpenSourceCollectorApplication implements CommandLineRunner {
                 molecularFeaturesComputationService.convertToBitSet();
             }else if (args[0].equals("evaluateAnnotation")){
                 annotationLevelService.doWorkForAll();
+            }else if (args[0].equals("namesToLowerCase")){
+                namingService.namesToLowcase();
             }
 
             else { //Filling from scratch
@@ -165,15 +205,20 @@ public class NpOpenSourceCollectorApplication implements CommandLineRunner {
 
                     if(Arrays.asList(args).contains("importCOCONUTids")) {
                         //coconut_ids_april2020.csv
+                        System.out.println("importing  old COCONUT ids");
                         int index_of_id_file = Arrays.asList(args).indexOf("importCOCONUTids")+1;
                         createCNPidService.importIDs(args[index_of_id_file]);
                         createCNPidService.createIDforNewMolecules();
+
+                        System.out.println("done importing IDS and generating news ones");
                     }else{
                         createCNPidService.createDeNovoIDs();
                     }
 
                     //evaluate annotation level
+                    System.out.println("evaluating annotation levels");
                     annotationLevelService.doWorkForAll();
+                    System.out.println("done");
 
                     // Compute additional features
                     molecularFeaturesComputationService.doWork();

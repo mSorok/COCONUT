@@ -21,6 +21,22 @@ public class CreateCNPidService {
 
     public static String prefix= "CNP";
 
+
+    public void clearIDs(){
+
+        List<UniqueNaturalProduct> allunp = uniqueNaturalProductRepository.findAll();
+
+        for(UniqueNaturalProduct unp : allunp){
+
+            unp.setCoconut_id("");
+
+            uniqueNaturalProductRepository.save(unp);
+
+
+        }
+
+    }
+
     public void importIDs(String filename) {
 
         try {
@@ -32,16 +48,24 @@ public class CreateCNPidService {
 
 
             while ((line = bufferedReader.readLine()) != null){
-                ArrayList<String> dataline =new ArrayList<String>(Arrays.asList(line.split(","))); //coconut_id = 0, inchikey = 1
+                if(!line.startsWith("coconut_id")) {
+                    //ArrayList<String> dataline = new ArrayList<String>(Arrays.asList(line.split(","))); //coconut_id = 0, inchikey = 1
+                    String[] dataTab = line.split(",") ;
 
-                List<UniqueNaturalProduct> unplist = uniqueNaturalProductRepository.findByInchikey(dataline.get(1));
-                if(!unplist.isEmpty()){
-                    for(UniqueNaturalProduct unp : unplist){
-                        unp.setCoconut_id(dataline.get(0));
+                    List<UniqueNaturalProduct> unplist = uniqueNaturalProductRepository.findByInchikey(dataTab[1]);
+
+
+                    if (!unplist.isEmpty()) {
+                        for (UniqueNaturalProduct unp : unplist) {
+                            unp.setCoconut_id(dataTab[0]);
+                            uniqueNaturalProductRepository.save(unp);
+                        }
+
+                    } else {
+                        System.out.println("BAD! Could not find " + dataTab[0] + " in the new version of COCONUT!");
                     }
 
-                }else{
-                    System.out.println("BAD! Could not find "+dataline.get(1)+" in the new version of COCONUT!");
+
                 }
             }
         } catch (FileNotFoundException e) {
@@ -49,9 +73,10 @@ public class CreateCNPidService {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-
     }
+
+
+
 
     public void createDeNovoIDs(){
 
@@ -82,7 +107,7 @@ public class CreateCNPidService {
 
         for(UniqueNaturalProduct np : allnp){
 
-            if(np.getCoconut_id()==null || np.getCoconut_id()==""){
+            if(np.coconut_id==null || np.coconut_id==""){
                 unpWithoutId.add(np);
 
             }else{
@@ -95,12 +120,12 @@ public class CreateCNPidService {
         }
 
 
-        max_id++;
+        max_id+=1;
         for(UniqueNaturalProduct ildnp : unpWithoutId){
             String coconut_id = prefix + StringUtils.repeat("0", 7-StringUtils.length(max_id)) + max_id;
             ildnp.setCoconut_id(coconut_id);
             uniqueNaturalProductRepository.save(ildnp);
-            max_id++;
+            max_id+=1;
         }
 
     }

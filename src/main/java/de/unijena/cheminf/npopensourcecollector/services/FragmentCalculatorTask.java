@@ -9,14 +9,17 @@ import de.unijena.cheminf.npopensourcecollector.mongocollections.UniqueNaturalPr
 import org.openscience.cdk.aromaticity.Aromaticity;
 import org.openscience.cdk.aromaticity.ElectronDonation;
 import org.openscience.cdk.exception.CDKException;
+import org.openscience.cdk.exception.InvalidSmilesException;
 import org.openscience.cdk.fragment.MurckoFragmenter;
 import org.openscience.cdk.graph.CycleFinder;
 import org.openscience.cdk.graph.Cycles;
 import org.openscience.cdk.interfaces.*;
 import org.openscience.cdk.isomorphism.UniversalIsomorphismTester;
 import org.openscience.cdk.signature.AtomSignature;
+import org.openscience.cdk.silent.SilentChemObjectBuilder;
 import org.openscience.cdk.smiles.SmiFlavor;
 import org.openscience.cdk.smiles.SmilesGenerator;
+import org.openscience.cdk.smiles.SmilesParser;
 import org.openscience.cdk.tools.manipulator.AtomContainerManipulator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.annotation.Transient;
@@ -83,8 +86,13 @@ public class FragmentCalculatorTask implements Runnable {
             Double npl_score_with_sugar = 0.0;
             Double npl_score_noh = 0.0;
 
-
-            IAtomContainer acFull = atomContainerToUniqueNaturalProductService.createAtomContainer(np);
+            SmilesParser sp = new SmilesParser(SilentChemObjectBuilder.getInstance());
+            IAtomContainer acFull = null;
+            try {
+                acFull = sp.parseSmiles(np.smiles);
+            } catch (InvalidSmilesException e) {
+                e.printStackTrace();
+            }
 
             IAtomContainer acSugarFree = this.sugarRemovalService.removeSugarsFromAtomContainer(acFull);
 
@@ -92,12 +100,11 @@ public class FragmentCalculatorTask implements Runnable {
 
                 //molecule contains sugar and is not only sugar OR does not contain sugar
                 try {
-                    if(!universalIsomorphismTester.isIsomorph(acSugarFree, acFull)) {
+                    if (!universalIsomorphismTester.isIsomorph(acSugarFree, acFull)) {
                         np.setContains_sugar(1);
                         np.setContains_linear_sugars(acSugarFree.getProperty("CONTAINS_LINEAR_SUGAR"));
                         np.setContains_ring_sugars(acSugarFree.getProperty("CONTAINS_CIRCULAR_SUGAR"));
-                    }
-                    else{
+                    } else {
                         //molecule doesn't contain sugar
                         np.setContains_sugar(0);
                     }
@@ -115,34 +122,40 @@ public class FragmentCalculatorTask implements Runnable {
                 Hashtable<String, Integer> fragmentsWithSugar = generateCountedAtomSignatures(acFull, height);
                 Hashtable<String, Integer> fragmentsWithoutSugar = generateCountedAtomSignatures(acSugarFree, height);
 
-
+                System.out.println(np.smiles);
+                System.out.println(acFull);
 
                 //computing the NPL score with the Sugar
-                for (String f : fragmentsWithSugar.keySet()) {
+                if(fragmentsWithSugar != null &&  !fragmentsWithSugar.isEmpty()){
+                    for (String f : fragmentsWithSugar.keySet()) {
 
-                    Fragment foundFragment = fragmentRepository.findBySignatureAndWithsugar(f, 1);
+                        Fragment foundFragment = fragmentRepository.findBySignatureAndWithsugar(f, 1);
 
-                    if(foundFragment==null){
-                        //it is a new fragment!
-                        Fragment newFragment = new Fragment();
-                        newFragment.setHeight(height);
-                        newFragment.setWith_sugar(1);
-                        newFragment.setSignature(f);
-                        newFragment.setScorenp(1.0);
-                        newFragment.presentInMolecules.add(np);
-                        foundFragment = fragmentRepository.save(newFragment);
+                        if (foundFragment == null) {
+                            //it is a new fragment!
+                            Fragment newFragment = new Fragment();
+                            newFragment.setHeight(height);
+                            newFragment.setWith_sugar(1);
+                            newFragment.setSignature(f);
+                            newFragment.setScorenp(1.0);
+                            newFragment.presentInMolecules.add(np);
+                            foundFragment = fragmentRepository.save(newFragment);
+                        } else {
+                            foundFragment.presentInMolecules.add(np);
+                        }
+
+                        npl_score_with_sugar = npl_score_with_sugar + (foundFragment.getScorenp() * fragmentsWithSugar.get(f));
+
+                        np.addFragmentWithSugar(f, fragmentsWithSugar.get(f));
+
                     }
-                    else{
-                        foundFragment.presentInMolecules.add(np);
-                    }
 
-                    npl_score_with_sugar = npl_score_with_sugar + (foundFragment.getScorenp() * fragmentsWithSugar.get(f));
+                    npl_score_with_sugar = npl_score_with_sugar / np.getTotal_atom_number();
+                    np.setNpl_sugar_score(npl_score_with_sugar);
 
-                    np.addFragmentWithSugar(f, fragmentsWithSugar.get(f));
-
+                }else{
+                    System.out.println("something went wrong with full AC fragmentation for molecule "+np.inchikey);
                 }
-                npl_score_with_sugar = npl_score_with_sugar / np.getTotal_atom_number();
-                np.setNpl_sugar_score(npl_score_with_sugar);
 
                 //Computing the NPL score without the sugar
                 for (String f : fragmentsWithoutSugar.keySet()) {
@@ -293,7 +306,7 @@ public class FragmentCalculatorTask implements Runnable {
 
         //atomContainer = calculateAromaticity(atomContainer);
 
-        if(atomContainer !=null && !atomContainer.isEmpty()) {
+        if(atomContainer != null && !atomContainer.isEmpty()) {
 
             for (IAtom atom : atomContainer.atoms()) {
                 try {
@@ -313,12 +326,10 @@ public class FragmentCalculatorTask implements Runnable {
                 }
 
             }
-
-
             return countedAtomSignatures;
         }
         else{
-            return null;
+            return countedAtomSignatures;
         }
     }
 

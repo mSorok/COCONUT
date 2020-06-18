@@ -17,16 +17,18 @@ public class AnnotationLevelService {
     UniqueNaturalProductRepository uniqueNaturalProductRepository;
 
     public void doWorkForAll(){
+        System.out.println("Evaluating annotations");
         List<String> allCoconutIds = uniqueNaturalProductRepository.findAllCoconutIds();
 
         for(String coconut_id : allCoconutIds){
             this.doWorkForOne(coconut_id);
         }
-
+        System.out.println("done");
     }
 
 
     public void doWorkForOne(String coconut_id){
+
 
         UniqueNaturalProduct np = uniqueNaturalProductRepository.findByCoconut_id(coconut_id).get(0);
 
@@ -44,15 +46,17 @@ public class AnnotationLevelService {
                 hasName = true;
             }
 
-            if (!np.getTextTaxa().isEmpty()) {
+            np.textTaxa.remove("");
+            if (!np.getTextTaxa().isEmpty() && !np.getTextTaxa().equals("notax") ){
                 hasOrganism = true;
             }
 
+            np.citationDOI.remove("");
             if (!np.citationDOI.isEmpty()) {
                 hasLiterature = true;
             }
 
-            if (!np.getFound_in_databases().isEmpty() && (np.found_in_databases.contains("chebi") || np.found_in_databases.contains("pubchem") || np.found_in_databases.contains("cmaup") || np.found_in_databases.contains("chembl"))) {
+            if (!np.getFound_in_databases().isEmpty() && (np.found_in_databases.contains("chebi_np") || np.found_in_databases.contains("knapsack") || np.found_in_databases.contains("cmaup") || np.found_in_databases.contains("chembl_np") || np.found_in_databases.contains("npatlas"))) {
                 hasTrustedSource = true;
             }
 
@@ -64,6 +68,7 @@ public class AnnotationLevelService {
 
             uniqueNaturalProductRepository.save(np);
         }
+
 
 
     }
