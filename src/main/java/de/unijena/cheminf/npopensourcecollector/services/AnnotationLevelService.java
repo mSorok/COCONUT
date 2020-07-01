@@ -42,7 +42,7 @@ public class AnnotationLevelService {
             boolean hasTrustedSource = false;
 
 
-            if (np.getName() != "" && np.getName() != null) {
+            if (!np.getName().equals("") && np.getName() != null) {
                 hasName = true;
             }
 
@@ -56,7 +56,9 @@ public class AnnotationLevelService {
                 hasLiterature = true;
             }
 
-            if (!np.getFound_in_databases().isEmpty() && (np.found_in_databases.contains("chebi_np") || np.found_in_databases.contains("knapsack") || np.found_in_databases.contains("cmaup") || np.found_in_databases.contains("chembl_np") || np.found_in_databases.contains("npatlas"))) {
+            if (!np.getFound_in_databases().isEmpty() && (np.found_in_databases.contains("chebi_np") || np.found_in_databases.contains("knapsack")
+                    || np.found_in_databases.contains("cmaup") || np.found_in_databases.contains("chembl_np") || np.found_in_databases.contains("npatlas")
+            || np.found_in_databases.contains("piellabdata") )) {
                 hasTrustedSource = true;
             }
 

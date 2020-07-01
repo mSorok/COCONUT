@@ -53,6 +53,8 @@ public class NPUnificationService {
 
     private ArrayList<String> sourceNames;
 
+    private Hashtable<String, String> sourceURLs;
+
 
 
     public void doWork(){
@@ -60,6 +62,8 @@ public class NPUnificationService {
         System.out.println("NP unification InChi-key based");
 
         sourceNames = this.fetchSourceNames();
+
+        sourceURLs = this.createSourceURLS();
 
         System.out.println("SOURCES  "+sourceNames);
 
@@ -94,6 +98,7 @@ public class NPUnificationService {
             unp.geoLocation = new HashSet<>();
             unp.citationDOI = new HashSet<>();
             unp.found_in_databases = new HashSet<>();
+            unp.xrefs = new HashSet<>();
             unp.absolute_smiles = new Hashtable<>();
 
             //associate the UniqueNaturalProduct entry to each of the sources
@@ -131,7 +136,14 @@ public class NPUnificationService {
 
                 }
                 else if( unp.getName() != null && unp.getName() != "" && snp.getName() != null){
-                    if(snp.getSource().toLowerCase().contains("chebi")){
+                    if(snp.getSource().toLowerCase().contains("piellabdata")){
+                        //replace name by ChebiName
+                        unp.synonyms.add(unp.name);
+                        unp.name = snp.getName().trim();
+
+                        unp.nameTrustLevel=3;
+                    }
+                    else if(snp.getSource().toLowerCase().contains("chebi") && unp.nameTrustLevel<=2){
 
                         //replace name by ChebiName
                         unp.synonyms.add(unp.name);
@@ -201,6 +213,14 @@ public class NPUnificationService {
                 //database
                 if(snp.getSource() != null){
                     unp.found_in_databases.add(snp.getSource());
+
+                    ArrayList<String> miniXref = new ArrayList<String>();
+                    miniXref.add(snp.getSource());
+                    miniXref.add(snp.idInSource);
+                    if(sourceURLs.containsKey(snp.getSource())) {
+                        miniXref.add(sourceURLs.get(snp.getSource()));
+                    }
+                    unp.xrefs.add(miniXref);
                 }
 
                 //Absolute smiles (with stereochemistry)
@@ -367,6 +387,9 @@ public class NPUnificationService {
             }
             np.setPubchemFingerprint(pcl);
 
+            np.pubfp = new HashMap<>();
+            np.pubfp.put(new Integer(pcl.size()), pcl);
+
 
             s = circularFingerprinter.getBitFingerprint(ac).asBitSet().toString();
             pcl = new ArrayList<>();
@@ -422,6 +445,126 @@ public class NPUnificationService {
             e.printStackTrace();
         }
         return np;
+    }
+
+
+    public Hashtable createSourceURLS(){
+        Hashtable<String, String> urls = new Hashtable<>();
+
+        if( this.sourceNames != null && !this.sourceNames.isEmpty()){
+            for(String sourceName : this.sourceNames){
+                /*if(sourceName.equals("biofacquim")){
+                    urls.put("biofacquim", "https://biofacquim.herokuapp.com/");
+                }*/
+
+                if(sourceName.equals("bitterdb")){
+                    urls.put("bitterdb", "http://bitterdb.agri.huji.ac.il/compound.php?id=");
+                }
+
+                if(sourceName.equals("carotenoids")){
+                    urls.put("carotenoids", "http://carotenoiddb.jp/Entries/");
+                }
+
+                if(sourceName.equals("chebi_np")){
+                    urls.put("chebi_np", "https://www.ebi.ac.uk/chebi/searchId.do?chebiId=CHEBI:");
+                }
+
+                if(sourceName.equals("chembl_np")){
+                    urls.put("chembl_np", "https://www.ebi.ac.uk/chembl/compound_report_card/");
+                }
+
+
+                if(sourceName.equals("cmaup")){
+                    urls.put("cmaup", "http://bidd2.nus.edu.sg/CMAUP/searchresults.php?keyword_search=");
+                }
+
+                if(sourceName.equals("pubchem_tested_np")){
+                    urls.put("pubchem_tested_np", "https://pubchem.ncbi.nlm.nih.gov/compound/");
+                }
+
+                if(sourceName.equals("drugbanknp")){
+                    urls.put("drugbanknp", "https://www.drugbank.ca/drugs/");
+                }
+
+
+                if(sourceName.equals("chemspidernp")){
+                    urls.put("chemspidernp", "http://www.chemspider.com/Chemical-Structure.");
+                }
+
+                if(sourceName.equals("np_atlas_2019_12") ){
+                    urls.put("np_atlas_2019_12", "https://www.npatlas.org/joomla/index.php/explore/compounds#npaid=");
+                }
+
+                if(sourceName.equals("npatlas")){
+                    urls.put("npatlas", "https://www.npatlas.org/joomla/index.php/explore/compounds#npaid=");
+                }
+
+
+
+
+                if(sourceName.equals("exposome-explorer")){
+                    urls.put("exposome-explorer", "http://exposome-explorer.iarc.fr/compounds/");
+                }
+
+                if(sourceName.equals("fooddb")){
+                    urls.put("fooddb", "https://foodb.ca/compounds/");
+                }
+
+                if(sourceName.equals("knapsack")){
+                    urls.put("knapsack", "http://www.knapsackfamily.com/knapsack_core/information.php?mode=r&word=");
+                }
+
+                if(sourceName.equals("npass")){
+                    urls.put("npass", "http://bidd2.nus.edu.sg/NPASS/browse_np.php?compound=");
+                }
+
+                if(sourceName.equals("nubbe")){
+                    urls.put("nubbe", "https://nubbe.iq.unesp.br/portal/nubbe-search.html");
+                }
+
+                if(sourceName.equals("phenolexplorer")){
+                    urls.put("phenolexplorer", "http://phenol-explorer.eu/compounds/");
+                }
+
+
+                if(sourceName.equals("sancdb")){
+                    urls.put("sancdb", "https://sancdb.rubi.ru.ac.za/compounds/");
+                }
+
+
+                if(sourceName.equals("supernatural2")){
+                    urls.put("supernatural2", "http://bioinf-applied.charite.de/supernatural_new/index.php?site=compound_search&id=");
+                }
+
+
+                if(sourceName.equals("tcmdb_taiwan")){
+                    urls.put("tcmdb_taiwan", "http://tcm.cmu.edu.tw/");
+                }
+
+                if(sourceName.equals("tppt")){
+                    urls.put("tppt", "https://www.agroscope.admin.ch/agroscope/en/home/publications/apps/tppt.html");
+                }
+
+                if(sourceName.equals("vietherb")){
+                    urls.put("vietherb", "https://vietherb.com.vn/metabolites/");
+                }
+
+                if(sourceName.equals("streptomedb")){
+                    urls.put("streptomedb", "http://132.230.56.4/streptomedb2/get_drugcard/");
+                }
+
+
+
+
+
+
+            }
+        }
+
+
+
+        return urls;
+
     }
 
 

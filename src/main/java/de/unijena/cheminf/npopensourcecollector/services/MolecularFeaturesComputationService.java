@@ -9,6 +9,7 @@ import org.openscience.cdk.aromaticity.Aromaticity;
 import org.openscience.cdk.aromaticity.ElectronDonation;
 import org.openscience.cdk.atomtype.CDKAtomTypeMatcher;
 import org.openscience.cdk.exception.CDKException;
+import org.openscience.cdk.exception.InvalidSmilesException;
 import org.openscience.cdk.fingerprint.*;
 import org.openscience.cdk.graph.Cycles;
 import org.openscience.cdk.hash.MoleculeHashGenerator;
@@ -18,9 +19,11 @@ import org.openscience.cdk.qsar.descriptors.molecular.*;
 import org.openscience.cdk.qsar.result.DoubleArrayResult;
 import org.openscience.cdk.qsar.result.DoubleResult;
 import org.openscience.cdk.qsar.result.IntegerResult;
+import org.openscience.cdk.silent.AtomContainer;
 import org.openscience.cdk.silent.SilentChemObjectBuilder;
 import org.openscience.cdk.smiles.SmiFlavor;
 import org.openscience.cdk.smiles.SmilesGenerator;
+import org.openscience.cdk.smiles.SmilesParser;
 import org.openscience.cdk.tools.CDKHydrogenAdder;
 import org.openscience.cdk.tools.ErtlFunctionalGroupsFinder;
 import org.openscience.cdk.tools.ErtlFunctionalGroupsFinderUtility;
@@ -61,6 +64,38 @@ public class MolecularFeaturesComputationService {
     MoleculeHashGenerator efgHashGenerator = ErtlFunctionalGroupsFinderUtility.getFunctionalGroupHashGenerator();
     SmilesGenerator efgSmilesGenerator = new SmilesGenerator(SmiFlavor.Unique | SmiFlavor.UseAromaticSymbols);
 
+    SmilesGenerator uniqueSmilesGenerator = new SmilesGenerator(SmiFlavor.Unique);
+
+
+
+    public void generateUniqueSmiles(){
+        System.out.println("Generating nice smiles");
+        List<String> allCoconutIds = uniqueNaturalProductRepository.findAllCoconutIds();
+
+        SmilesParser sp = new SmilesParser(DefaultChemObjectBuilder.getInstance());
+
+        for(String coconut_id : allCoconutIds){
+
+            UniqueNaturalProduct unp = uniqueNaturalProductRepository.findByCoconut_id(coconut_id).get(0);
+
+            IAtomContainer molecule = null;
+            try {
+                molecule = sp.parseSmiles(unp.smiles);
+
+                AtomContainerManipulator.suppressHydrogens(molecule); // removing explicit hydrogens
+
+                unp.unique_smiles = uniqueSmilesGenerator.create(molecule);
+
+                uniqueNaturalProductRepository.save(unp);
+
+            } catch (CDKException e) {
+                e.printStackTrace();
+            }
+
+
+        }
+        System.out.println("done");
+    }
 
 
 

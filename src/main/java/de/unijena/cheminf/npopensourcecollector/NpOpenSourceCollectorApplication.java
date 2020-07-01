@@ -59,6 +59,10 @@ public class NpOpenSourceCollectorApplication implements CommandLineRunner {
     NamingService namingService;
 
 
+    @Autowired
+    FingerprintsCountsFiller fingerprintsCountsFiller;
+
+
 
     public static void main(String[] args) {
         SpringApplication.run(NpOpenSourceCollectorApplication.class, args);
@@ -71,7 +75,7 @@ public class NpOpenSourceCollectorApplication implements CommandLineRunner {
 
 
 
-        System.out.println("Code version from 18th of June 2020");
+        System.out.println("Code version from 30th of June 2020");
 
         if (args.length > 0) {
 
@@ -121,7 +125,7 @@ public class NpOpenSourceCollectorApplication implements CommandLineRunner {
             else if(args[0].equals("updateCNPid")){
                 System.out.println("Updating COCONUT ids");
                 createCNPidService.clearIDs();
-                createCNPidService.importIDs("coconut_ids_april2020.csv");
+                createCNPidService.importIDs("coconut_ids_june2020.csv");
                 createCNPidService.createIDforNewMolecules();
 
                 updaterService.updateSourceNaturalProductsParallelized(40);
@@ -168,7 +172,9 @@ public class NpOpenSourceCollectorApplication implements CommandLineRunner {
             }else if (args[0].equals("namesToLowerCase")){
                 namingService.namesToLowcase();
             }
-
+            else if(args[0].equals("generateUniqueSmiles")){
+                molecularFeaturesComputationService.generateUniqueSmiles();
+            }
             else { //Filling from scratch
                 //cleaning the DB before filling it
                 mongoTemplate.getDb().drop();
@@ -195,7 +201,7 @@ public class NpOpenSourceCollectorApplication implements CommandLineRunner {
 
                     //fragmentCalculatorService.doWork();
 
-                    fragmentCalculatorService.doParallelizedWork(42);
+                    fragmentCalculatorService.doParallelizedWork(40);
 
 
 
@@ -207,6 +213,7 @@ public class NpOpenSourceCollectorApplication implements CommandLineRunner {
                         //coconut_ids_april2020.csv
                         System.out.println("importing  old COCONUT ids");
                         int index_of_id_file = Arrays.asList(args).indexOf("importCOCONUTids")+1;
+
                         createCNPidService.importIDs(args[index_of_id_file]);
                         createCNPidService.createIDforNewMolecules();
 
@@ -223,6 +230,12 @@ public class NpOpenSourceCollectorApplication implements CommandLineRunner {
                     // Compute additional features
                     molecularFeaturesComputationService.doWork();
                     updaterService.updateSourceNaturalProductsParallelized(42);
+
+                    namingService.namesToLowcase();
+
+                    fingerprintsCountsFiller.doWork();
+
+                    molecularFeaturesComputationService.generateUniqueSmiles();
 
                     //read and insert synthetic molecules
                     //readerService.readSyntheticMoleculesAndInsertInMongo(args[1]); //tsv file

@@ -107,11 +107,11 @@ public class CreateCNPidService {
 
         for(UniqueNaturalProduct np : allnp){
 
-            if(np.coconut_id==null || np.coconut_id==""){
+            if(np.coconut_id.equals("")){
                 unpWithoutId.add(np);
 
-            }else{
-                int coconut_tmp = Integer.parseInt( np.getCoconut_id().split("CNP")[1] );
+            }else if(np.coconut_id.startsWith("CNP")){
+                int coconut_tmp = Integer.parseInt( np.getCoconut_id().split("NP")[1] );
                 if(coconut_tmp>max_id ){
                     max_id = coconut_tmp;
                 }
