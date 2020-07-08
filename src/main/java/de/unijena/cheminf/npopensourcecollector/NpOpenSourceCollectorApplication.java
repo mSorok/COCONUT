@@ -167,6 +167,9 @@ public class NpOpenSourceCollectorApplication implements CommandLineRunner {
             else if(args[0].equals("updateBitFingerprints")){
 
                 molecularFeaturesComputationService.convertToBitSet();
+            }else if(args[0].equals("createPubchemBitCounts")) {
+                molecularFeaturesComputationService.createPubchemBitCounts();
+
             }else if (args[0].equals("evaluateAnnotation")){
                 annotationLevelService.doWorkForAll();
             }else if (args[0].equals("namesToLowerCase")){
@@ -177,6 +180,7 @@ public class NpOpenSourceCollectorApplication implements CommandLineRunner {
             }
             else { //Filling from scratch
                 //cleaning the DB before filling it
+
                 mongoTemplate.getDb().drop();
 
                 String dataDirectory = args[0];
@@ -213,7 +217,7 @@ public class NpOpenSourceCollectorApplication implements CommandLineRunner {
                         //coconut_ids_april2020.csv
                         System.out.println("importing  old COCONUT ids");
                         int index_of_id_file = Arrays.asList(args).indexOf("importCOCONUTids")+1;
-
+                        createCNPidService.clearIDs();
                         createCNPidService.importIDs(args[index_of_id_file]);
                         createCNPidService.createIDforNewMolecules();
 
@@ -236,6 +240,8 @@ public class NpOpenSourceCollectorApplication implements CommandLineRunner {
                     fingerprintsCountsFiller.doWork();
 
                     molecularFeaturesComputationService.generateUniqueSmiles();
+
+                    molecularFeaturesComputationService.createPubchemBitCounts();
 
                     //read and insert synthetic molecules
                     //readerService.readSyntheticMoleculesAndInsertInMongo(args[1]); //tsv file

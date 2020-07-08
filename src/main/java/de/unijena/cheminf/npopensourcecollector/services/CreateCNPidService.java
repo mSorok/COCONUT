@@ -24,6 +24,8 @@ public class CreateCNPidService {
 
     public void clearIDs(){
 
+        System.out.println("clearing coconut ids");
+
         List<UniqueNaturalProduct> allunp = uniqueNaturalProductRepository.findAll();
 
         for(UniqueNaturalProduct unp : allunp){
@@ -34,6 +36,8 @@ public class CreateCNPidService {
 
 
         }
+
+        System.out.println("done");
 
     }
 

@@ -12,8 +12,8 @@ Unless you want to modify the code, we recomment using the compiled JAR that can
 #### Load COCONUT
 You can download the latest version COCONUT from ZENODO (https://zenodo.org/record/3688734). In case you want to explore the whole database in MongoDB, you can load the downloaded dataset dump as following:
 ````bash
-unzip COCONUTv2.zip
-cd COCONUTv1/COCONUT/
+unzip COCONUT2020-07.zip
+cd COCONUT2020-07/COCONUT2020-07/
 mongorestore --db=COCONUT --noIndexRestore .
 ````
 
@@ -22,19 +22,44 @@ However, seen the size of the dataset, we suggest to add the indexes as followin
 
 ````bash
 mongo
-use COCONUT
-db.sourceNaturalProduct.createIndex( {source:1})
-db.sourceNaturalProduct.createIndex( {simpleInchi:1})
-db.sourceNaturalProduct.createIndex( {simpleInchiKey:1})
-db.uniqueNaturalProduct.createIndex( {inchi:1})
+use COCONUT2020-07
+
+
+ db.sourceNaturalProduct.createIndex( {source:1})
+
+ db.sourceNaturalProduct.createIndex( {simpleInchi:"hashed"})
+
+ db.sourceNaturalProduct.createIndex( {simpleInchiKey:1})
+ db.sourceNaturalProduct.createIndex( {originalInchiKey:1})
+ db.sourceNaturalProduct.createIndex( {originalSmiles:"hashed"})
+ db.sourceNaturalProduct.createIndex( {absoluteSmiles:"hashed"})
+ db.sourceNaturalProduct.createIndex( {idInSource:1})
+
+
+db.uniqueNaturalProduct.createIndex( {inchi:"hashed"})
 db.uniqueNaturalProduct.createIndex( {inchikey:1})
-db.uniqueNaturalProduct.createIndex( {smiles:1})
-db.uniqueNaturalProduct.createIndex( {clean_smiles:1})
+db.uniqueNaturalProduct.createIndex( {clean_smiles: "hashed"})
 db.uniqueNaturalProduct.createIndex( {molecular_formula:1})
-db.uniqueNaturalProduct.createIndex( {name:1})
 db.uniqueNaturalProduct.createIndex( {coconut_id:1})
+db.uniqueNaturalProduct.createIndex( {fragmentsWithSugar:"hashed"})
+db.uniqueNaturalProduct.createIndex( {fragments:"hashed"})
+db.uniqueNaturalProduct.createIndex( {annotationLevel:1})
+db.uniqueNaturalProduct.createIndex( {synonyms:"text", name:"text"})
+db.uniqueNaturalProduct.createIndex( {npl_score:1})
+
+db.uniqueNaturalProduct.createIndex( { pubchemBits : "hashed" } )
+
+db.uniqueNaturalProduct.createIndex( {unique_smiles: "hashed"})
+
+db.uniqueNaturalProduct.createIndex( { "pfCounts.bits" :1} )
+db.uniqueNaturalProduct.createIndex( { "pfCounts.count" : 1 })
+
+
 db.fragment.createIndex({signature:1})
 db.fragment.createIndex({signature:1, withsugar:-1})
+
+
+
 ````
 
 #### Required folder structure
@@ -42,7 +67,11 @@ db.fragment.createIndex({signature:1, withsugar:-1})
 ````bash
 COCONUT
 ├── coconut-0.0.1-SNAPSHOT.jar # the compiled jar. It can be downloaded from ZENODO: https://zenodo.org/record/3695455
+├── coconut_ids_june2020.csv
 ├── data # here go the files with NP molecular structures
+├── UpdateCOCONUT
+│   ├── COCONUTupdater.py
+│   ├── VerifyNames.py
 ├── fragments
 │   ├── fragment_without_sugar.txt
 │   ├── fragment_with_sugar.txt
@@ -54,7 +83,7 @@ COCONUT
 ##### Run COCONUT compilation from scratch
 
 ```bash
-java -jar coconut-0.0.1-SNAPSHOT.jar ~/Projects/NP/COCONUT/data ~/Projects/NP/COCONUT/sm/sm.tsv ~/Projects/NP/COCONUT/fragments/fragment_without_sugar.txt ~/Projects/NP/COCONUT/fragments/fragment_with_sugar.txt &
+java -Xmx16288m -jar coconut-0.0.1-SNAPSHOT.jar data sm/sm.tsv fragments/fragment_without_sugar.txt fragments/fragment_with_sugar.txt importCOCONUTids coconut_ids_june2020.csv > logs.txt &
 ```
 
 ##### Re-run COCONUT to recompute missing molecular features 
@@ -82,6 +111,33 @@ In case you need to produce your own CNPid (COCONUT NP identifiers) - not recomm
 
 ```bash
 java -jar coconut-0.0.1-SNAPSHOT.jar addCNPid  & 
+```
+
+
+##### run only import of CNPid from file
+java -jar coconut-0.0.1-SNAPSHOT.jar onlyImportCoconutIds coconut_ids_june2020.csv &
+
+## Molecule names curation
+##### Import names from ChEBI, PubChem and CMAUP
+
+```bash
+python3 UpdateCOCONUT/COCONUTupdater.py
+```
+
+##### Import IUPAC names and clean
+
+```bash
+python3 UpdateCOCONUT/VerifyNames.py
+```
+
+##### Run annotation level recalculation  
+```bash
+java -Xmx16288m -jar coconut-0.0.1-SNAPSHOT.jar evaluateAnnotation &
+```
+
+##### Names to low case
+```bash
+java -Xmx16288m -jar coconut-0.0.1-SNAPSHOT.jar namesToLowerCase &
 ```
 
 

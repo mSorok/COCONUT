@@ -128,6 +128,19 @@ public class UniqueNaturalProduct  {
 
     public HashMap<Integer, ArrayList<Integer>> pubfp;
 
+    public class PubchemFingerPrintsCounts{
+
+        public Integer count;
+        public ArrayList<Integer> bits;
+
+        public PubchemFingerPrintsCounts(Integer count, ArrayList<Integer> bits) {
+            this.count = count;
+            this.bits = bits;
+        }
+    }
+
+    public PubchemFingerPrintsCounts pfCounts;
+
     public ArrayList<Integer> circularFingerprint;
 
     public ArrayList<Integer> substructureFingerprint;

@@ -387,8 +387,8 @@ public class NPUnificationService {
             }
             np.setPubchemFingerprint(pcl);
 
-            np.pubfp = new HashMap<>();
-            np.pubfp.put(new Integer(pcl.size()), pcl);
+            //np.pubfp = new HashMap<>();
+            //np.pubfp.put(new Integer(pcl.size()), pcl);
 
 
             s = circularFingerprinter.getBitFingerprint(ac).asBitSet().toString();

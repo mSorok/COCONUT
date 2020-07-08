@@ -67,6 +67,50 @@ public class MolecularFeaturesComputationService {
     SmilesGenerator uniqueSmilesGenerator = new SmilesGenerator(SmiFlavor.Unique);
 
 
+    public void createPubchemBitCounts(){
+        System.out.println("Creating bit counts");
+
+        List<String> allCoconutIds = uniqueNaturalProductRepository.findAllCoconutIds();
+
+        SmilesParser sp = new SmilesParser(DefaultChemObjectBuilder.getInstance());
+
+        for(String coconut_id : allCoconutIds){
+
+            UniqueNaturalProduct unp = uniqueNaturalProductRepository.findByCoconut_id(coconut_id).get(0);
+
+            IAtomContainer molecule = null;
+            try {
+                molecule = sp.parseSmiles(unp.smiles);
+
+
+
+                BitSet s = pubchemFingerprinter.getBitFingerprint(molecule).asBitSet();
+                ArrayList<Integer> indexes = new ArrayList<>();
+                for (int i = s.nextSetBit(0); i != -1; i = s.nextSetBit(i + 1)) {
+                    indexes.add(i);
+                }
+
+                UniqueNaturalProduct.PubchemFingerPrintsCounts pcClass = unp.new PubchemFingerPrintsCounts(indexes.size(),indexes );
+
+                unp.pfCounts = pcClass;
+
+                unp.pubfp = null;
+
+                uniqueNaturalProductRepository.save(unp);
+
+            } catch (CDKException e) {
+                e.printStackTrace();
+            }
+
+
+        }
+
+
+
+        System.out.println("done");
+
+    }
+
 
     public void generateUniqueSmiles(){
         System.out.println("Generating nice smiles");
