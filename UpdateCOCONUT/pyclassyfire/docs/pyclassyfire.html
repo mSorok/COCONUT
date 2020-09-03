@@ -1,0 +1,299 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pyclassyfire API &#8212; pyclassyfire 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="pyclassyfire documentation" href="index.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="pyclassyfire-api">
+<h1>pyclassyfire API<a class="headerlink" href="#pyclassyfire-api" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-pyclassyfire.client">
+<span id="pyclassyfire-client-module"></span><h2>pyclassyfire.client module<a class="headerlink" href="#module-pyclassyfire.client" title="Permalink to this headline">¶</a></h2>
+<p>A client for the ClassyFire API which enables efficient querying with 
+chemical database files</p>
+<dl class="function">
+<dt id="pyclassyfire.client.get_chemont_node">
+<code class="descclassname">pyclassyfire.client.</code><code class="descname">get_chemont_node</code><span class="sig-paren">(</span><em>chemontid</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyclassyfire/client.html#get_chemont_node"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyclassyfire.client.get_chemont_node" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return data for the TaxNode with ID chemontid.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>chemontid</strong> (<em>str</em>) &#8211; the ChemOnt ID of the entity.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The classification results for the entity as json.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">str</td>
+</tr>
+</tbody>
+</table>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">get_chemont_node</span><span class="p">(</span><span class="s1">&#39;CHEMONTID:0004253&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyclassyfire.client.get_entity">
+<code class="descclassname">pyclassyfire.client.</code><code class="descname">get_entity</code><span class="sig-paren">(</span><em>inchikey</em>, <em>return_format='json'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyclassyfire/client.html#get_entity"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyclassyfire.client.get_entity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given a InChIKey for a previously queried structure, fetch the 
+classification results.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>inchikey</strong> (<em>str</em>) &#8211; An InChIKey for a previously calculated chemical structure</li>
+<li><strong>return_format</strong> (<em>str</em>) &#8211; desired return format. valid types are json, csv or sdf</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">query information</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">str</p>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">get_entity</span><span class="p">(</span><span class="s2">&quot;ATUOYWHBWRKTHZ-UHFFFAOYSA-N&quot;</span><span class="p">,</span> <span class="s1">&#39;csv&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">get_entity</span><span class="p">(</span><span class="s2">&quot;ATUOYWHBWRKTHZ-UHFFFAOYSA-N&quot;</span><span class="p">,</span> <span class="s1">&#39;json&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">get_entity</span><span class="p">(</span><span class="s2">&quot;ATUOYWHBWRKTHZ-UHFFFAOYSA-N&quot;</span><span class="p">,</span> <span class="s1">&#39;sdf&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyclassyfire.client.get_results">
+<code class="descclassname">pyclassyfire.client.</code><code class="descname">get_results</code><span class="sig-paren">(</span><em>query_id</em>, <em>return_format='json'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyclassyfire/client.html#get_results"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyclassyfire.client.get_results" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given a query_id, fetch the classification results.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>query_id</strong> (<em>str</em>) &#8211; A numeric query id returned at time of query submission</li>
+<li><strong>return_format</strong> (<em>str</em>) &#8211; desired return format. valid types are json, csv or sdf</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">query information</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">str</p>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">get_results</span><span class="p">(</span><span class="s1">&#39;595535&#39;</span><span class="p">,</span> <span class="s1">&#39;csv&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">get_results</span><span class="p">(</span><span class="s1">&#39;595535&#39;</span><span class="p">,</span> <span class="s1">&#39;json&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">get_results</span><span class="p">(</span><span class="s1">&#39;595535&#39;</span><span class="p">,</span> <span class="s1">&#39;sdf&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyclassyfire.client.iupac_query">
+<code class="descclassname">pyclassyfire.client.</code><code class="descname">iupac_query</code><span class="sig-paren">(</span><em>compound</em>, <em>label='pyclassyfire'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyclassyfire/client.html#iupac_query"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyclassyfire.client.iupac_query" title="Permalink to this definition">¶</a></dt>
+<dd><p>Submit a IUPAC compound name to the ClassyFire service for evaluation 
+and receive a id which can be used to used to collect results</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>compound</strong> (<em>str</em>) &#8211; The line delimited compound names. Optionally a 
+tab-separated id may be prepended for each compound.</li>
+<li><strong>label</strong> &#8211; A label for the query</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">A query ID number</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">int</p>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">iupac_query</span><span class="p">(</span><span class="s1">&#39;ethane&#39;</span><span class="p">,</span> <span class="s1">&#39;iupac_test&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">iupac_query</span><span class="p">(</span><span class="s1">&#39;C001</span><span class="se">\t</span><span class="s1">ethane</span><span class="se">\n</span><span class="s1">C002</span><span class="se">\t</span><span class="s1">ethanol&#39;</span><span class="p">,</span> <span class="s1">&#39;iupac_test&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyclassyfire.client.sdf_query">
+<code class="descclassname">pyclassyfire.client.</code><code class="descname">sdf_query</code><span class="sig-paren">(</span><em>inpath</em>, <em>outpath=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyclassyfire/client.html#sdf_query"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyclassyfire.client.sdf_query" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given a path to a compound set in a sdf file, annotate all compounds 
+and write results as attributes in a sdf file.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>inpath</strong> (<em>str</em>) &#8211; path to compound file to be annotated</li>
+<li><strong>outpath</strong> (<em>str</em>) &#8211; Path to desired output location</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">sdf_query</span><span class="p">(</span><span class="s1">&#39;/sdf_data.sdf&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyclassyfire.client.structure_query">
+<code class="descclassname">pyclassyfire.client.</code><code class="descname">structure_query</code><span class="sig-paren">(</span><em>compound</em>, <em>label='pyclassyfire'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyclassyfire/client.html#structure_query"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyclassyfire.client.structure_query" title="Permalink to this definition">¶</a></dt>
+<dd><p>Submit a compound information to the ClassyFire service for evaluation 
+and receive a id which can be used to used to collect results</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>compound</strong> (<em>str</em>) &#8211; The compound structures as line delimited inchikey or 
+smiles. Optionally a tab-separated id may be prepended for each 
+structure.</li>
+<li><strong>label</strong> &#8211; A label for the query</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">A query ID number</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">int</p>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">structure_query</span><span class="p">(</span><span class="s1">&#39;CCC&#39;</span><span class="p">,</span> <span class="s1">&#39;smiles_test&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">structure_query</span><span class="p">(</span><span class="s1">&#39;InChI=1S/C3H4O3/c1-2(4)3(5)6/h1H3,(H,5,6)&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyclassyfire.client.tabular_query">
+<code class="descclassname">pyclassyfire.client.</code><code class="descname">tabular_query</code><span class="sig-paren">(</span><em>inpath</em>, <em>structure_key</em>, <em>dialect='excel'</em>, <em>outpath=None</em>, <em>outfields=('taxonomy'</em>, <em>'description'</em>, <em>'substituents')</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyclassyfire/client.html#tabular_query"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyclassyfire.client.tabular_query" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given a path to a compound set in tabular form (comma or tab delimited)
+annotate all compounds and write results to an expanded table.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>inpath</strong> (<em>str</em>) &#8211; path to compound file to be annotated</li>
+<li><strong>structure_key</strong> (<em>str</em>) &#8211; column heading which contains the compounds InChIKey 
+or SMILES</li>
+<li><strong>dialect</strong> (<em>str</em>) &#8211; dialect for parsing table (generally &#8216;excel&#8217; for csv, 
+&#8216;excel-tab&#8217; for tsv)</li>
+<li><strong>outpath</strong> (<em>str</em>) &#8211; Path to desired output location</li>
+<li><strong>outfields</strong> (<em>tuple</em><em>(</em><em>string</em><em>)</em><em></em>) &#8211; Fields to append to table from ClassyFire output</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">tabular_query</span><span class="p">(</span><span class="s1">&#39;/tabulated_data.tsv&#39;</span><span class="p">,</span> <span class="s1">&#39;structure&#39;</span><span class="p">,</span> <span class="s1">&#39;excel-tab&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">pyclassyfire API</a><ul>
+<li><a class="reference internal" href="#module-pyclassyfire.client">pyclassyfire.client module</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="index.html" title="previous chapter">pyclassyfire documentation</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/pyclassyfire.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, James Jeffryes.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.4</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.7</a>
+      
+      |
+      <a href="_sources/pyclassyfire.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

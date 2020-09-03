@@ -80,53 +80,139 @@ public class FragmentCalculatorTask implements Runnable {
         //sugarRemovalService.prepareSugars();
 
         System.out.println("Computing NP fragments for task "+taskid);
-        for(UniqueNaturalProduct np : batchOfNaturalProducts){
+        for(UniqueNaturalProduct np : batchOfNaturalProducts) {
 
-            Double npl_score = 0.0;
-            Double npl_score_with_sugar = 0.0;
-            Double npl_score_noh = 0.0;
+            //if(np.npl_score != null &&  np.npl_score != 0.0){//compoute only for those that were not computed
+                Double npl_score = 0.0;
+                Double npl_score_with_sugar = 0.0;
+                Double npl_score_noh = 0.0;
 
-            SmilesParser sp = new SmilesParser(SilentChemObjectBuilder.getInstance());
-            IAtomContainer acFull = null;
-            try {
-                acFull = sp.parseSmiles(np.smiles);
-            } catch (InvalidSmilesException e) {
-                e.printStackTrace();
-            }
-
-            IAtomContainer acSugarFree = this.sugarRemovalService.removeSugarsFromAtomContainer(acFull);
-
-            if(acSugarFree != null) {
-
-                //molecule contains sugar and is not only sugar OR does not contain sugar
+                SmilesParser sp = new SmilesParser(SilentChemObjectBuilder.getInstance());
+                IAtomContainer acFull = null;
                 try {
-                    if (!universalIsomorphismTester.isIsomorph(acSugarFree, acFull)) {
-                        np.setContains_sugar(1);
-                        np.setContains_linear_sugars(acSugarFree.getProperty("CONTAINS_LINEAR_SUGAR"));
-                        np.setContains_ring_sugars(acSugarFree.getProperty("CONTAINS_CIRCULAR_SUGAR"));
-                    } else {
-                        //molecule doesn't contain sugar
-                        np.setContains_sugar(0);
-                    }
-                } catch (CDKException e) {
-                    System.out.println("Failed detecting isomorphism between molecules with and without sugar");
+                    acFull = sp.parseSmiles(np.smiles);
+                } catch (InvalidSmilesException e) {
                     e.printStackTrace();
                 }
 
-                //counting atoms for sugar free molecule
-                np.setSugar_free_total_atom_number(acSugarFree.getAtomCount());
-                np.setSugar_free_heavy_atom_number(computeNumberOfHeavyAtoms(acSugarFree));
+                IAtomContainer acSugarFree = this.sugarRemovalService.removeSugarsFromAtomContainer(acFull);
+
+                if (acSugarFree != null) {
+
+                    //molecule contains sugar and is not only sugar OR does not contain sugar
+                    try {
+                        if (!universalIsomorphismTester.isIsomorph(acSugarFree, acFull)) {
+                            np.setContains_sugar(1);
+                            np.setContains_linear_sugars(acSugarFree.getProperty("CONTAINS_LINEAR_SUGAR"));
+                            np.setContains_ring_sugars(acSugarFree.getProperty("CONTAINS_CIRCULAR_SUGAR"));
+                        } else {
+                            //molecule doesn't contain sugar
+                            np.setContains_sugar(0);
+                        }
+                    } catch (CDKException e) {
+                        System.out.println("Failed detecting isomorphism between molecules with and without sugar");
+                        e.printStackTrace();
+                    }
+
+                    //counting atoms for sugar free molecule
+                    np.setSugar_free_total_atom_number(acSugarFree.getAtomCount());
+                    np.setSugar_free_heavy_atom_number(computeNumberOfHeavyAtoms(acSugarFree));
 
 
-                //fragmenting the 2 versions of the molecule
-                Hashtable<String, Integer> fragmentsWithSugar = generateCountedAtomSignatures(acFull, height);
-                Hashtable<String, Integer> fragmentsWithoutSugar = generateCountedAtomSignatures(acSugarFree, height);
+                    //fragmenting the 2 versions of the molecule
+                    Hashtable<String, Integer> fragmentsWithSugar = generateCountedAtomSignatures(acFull, height);
+                    Hashtable<String, Integer> fragmentsWithoutSugar = generateCountedAtomSignatures(acSugarFree, height);
 
-                System.out.println(np.smiles);
-                System.out.println(acFull);
+                    System.out.println(np.smiles);
+                    System.out.println(acFull);
 
-                //computing the NPL score with the Sugar
-                if(fragmentsWithSugar != null &&  !fragmentsWithSugar.isEmpty()){
+                    //computing the NPL score with the Sugar
+                    if (fragmentsWithSugar != null && !fragmentsWithSugar.isEmpty()) {
+                        for (String f : fragmentsWithSugar.keySet()) {
+
+                            Fragment foundFragment = fragmentRepository.findBySignatureAndWithsugar(f, 1);
+
+                            if (foundFragment == null) {
+                                //it is a new fragment!
+                                Fragment newFragment = new Fragment();
+                                newFragment.setHeight(height);
+                                newFragment.setWith_sugar(1);
+                                newFragment.setSignature(f);
+                                newFragment.setScorenp(1.0);
+                                newFragment.presentInMolecules.add(np);
+                                foundFragment = fragmentRepository.save(newFragment);
+                            } else {
+                                foundFragment.presentInMolecules.add(np);
+                            }
+
+                            npl_score_with_sugar = npl_score_with_sugar + (foundFragment.getScorenp() * fragmentsWithSugar.get(f));
+
+                            np.addFragmentWithSugar(f, fragmentsWithSugar.get(f));
+
+                        }
+
+                        npl_score_with_sugar = npl_score_with_sugar / np.getTotal_atom_number();
+                        np.setNpl_sugar_score(npl_score_with_sugar);
+
+                    } else {
+                        System.out.println("something went wrong with full AC fragmentation for molecule " + np.inchikey);
+                    }
+
+                    //Computing the NPL score without the sugar
+                    for (String f : fragmentsWithoutSugar.keySet()) {
+                        Fragment foundFragment = fragmentRepository.findBySignatureAndWithsugar(f, 0);
+
+                        if (foundFragment == null) {
+                            //it is a new fragment!
+                            Fragment newFragment = new Fragment();
+                            newFragment.setHeight(height);
+                            newFragment.setWith_sugar(0);
+                            newFragment.setSignature(f);
+                            newFragment.setScorenp(1.0);
+                            newFragment.presentInMolecules.add(np);
+                            foundFragment = fragmentRepository.save(newFragment);
+                        } else {
+                            foundFragment.presentInMolecules.add(np);
+                        }
+
+                        npl_score = npl_score + (foundFragment.getScorenp() * fragmentsWithoutSugar.get(f));
+
+                        np.addFragment(f, fragmentsWithoutSugar.get(f));
+
+                        //For the score without fragments starting by a H
+                        if (!f.startsWith("[H]")) {
+                            npl_score_noh = npl_score_noh + (foundFragment.getScorenp() * fragmentsWithoutSugar.get(f));
+                        }
+                    }
+
+                    npl_score = npl_score / np.getSugar_free_total_atom_number();
+                    np.setNpl_score(npl_score);
+
+                    npl_score_noh = npl_score_noh / np.getSugar_free_heavy_atom_number();
+                    np.setNpl_noh_score(npl_score_noh);
+
+
+                    try {
+                        IAtomContainer nm = AtomContainerManipulator.removeHydrogens(acSugarFree);
+                        np.setSugar_free_smiles(smilesGenerator.create(nm));
+                    } catch (CDKException e) {
+                        e.printStackTrace();
+                    }
+
+
+                    uniqueNaturalProductRepository.save(np);
+                    //System.out.println("Saved natural products without sugar and NPL score");
+
+                } else {
+                    //molecule is only sugar - need to work only on the sugar version
+
+                    //molecule after sugar removal is null - only sugar
+                    np.setContains_sugar(2);
+
+                    Hashtable<String, Integer> fragmentsWithSugar = generateCountedAtomSignatures(acFull, height);
+
+
+                    //computing the NPL score with the Sugar
                     for (String f : fragmentsWithSugar.keySet()) {
 
                         Fragment foundFragment = fragmentRepository.findBySignatureAndWithsugar(f, 1);
@@ -140,8 +226,6 @@ public class FragmentCalculatorTask implements Runnable {
                             newFragment.setScorenp(1.0);
                             newFragment.presentInMolecules.add(np);
                             foundFragment = fragmentRepository.save(newFragment);
-                        } else {
-                            foundFragment.presentInMolecules.add(np);
                         }
 
                         npl_score_with_sugar = npl_score_with_sugar + (foundFragment.getScorenp() * fragmentsWithSugar.get(f));
@@ -149,118 +233,33 @@ public class FragmentCalculatorTask implements Runnable {
                         np.addFragmentWithSugar(f, fragmentsWithSugar.get(f));
 
                     }
-
                     npl_score_with_sugar = npl_score_with_sugar / np.getTotal_atom_number();
                     np.setNpl_sugar_score(npl_score_with_sugar);
 
-                }else{
-                    System.out.println("something went wrong with full AC fragmentation for molecule "+np.inchikey);
+
+                    uniqueNaturalProductRepository.save(np);
+
+                    //System.out.println("Saved natural products with only sugars and NPL score");
                 }
 
-                //Computing the NPL score without the sugar
-                for (String f : fragmentsWithoutSugar.keySet()) {
-                    Fragment foundFragment = fragmentRepository.findBySignatureAndWithsugar(f, 0);
 
-                    if(foundFragment==null){
-                        //it is a new fragment!
-                        Fragment newFragment = new Fragment();
-                        newFragment.setHeight(height);
-                        newFragment.setWith_sugar(0);
-                        newFragment.setSignature(f);
-                        newFragment.setScorenp(1.0);
-                        newFragment.presentInMolecules.add(np);
-                        foundFragment = fragmentRepository.save(newFragment);
-                    }
-                    else{
-                        foundFragment.presentInMolecules.add(np);
-                    }
-
-                    npl_score = npl_score + (foundFragment.getScorenp() * fragmentsWithoutSugar.get(f));
-
-                    np.addFragment(f, fragmentsWithoutSugar.get(f) );
-
-                    //For the score without fragments starting by a H
-                    if (!f.startsWith("[H]")) {
-                        npl_score_noh = npl_score_noh + (foundFragment.getScorenp() * fragmentsWithoutSugar.get(f));
-                    }
-                }
-
-                npl_score = npl_score / np.getSugar_free_total_atom_number();
-                np.setNpl_score(npl_score);
-
-                npl_score_noh = npl_score_noh / np.getSugar_free_heavy_atom_number();
-                np.setNpl_noh_score(npl_score_noh);
-
+                //Calculate Murko Framework
 
                 try {
-                    IAtomContainer nm = AtomContainerManipulator.removeHydrogens(acSugarFree);
-                    np.setSugar_free_smiles(smilesGenerator.create(nm));
-                } catch (CDKException e) {
-                    e.printStackTrace();
-                }
-
-
-                uniqueNaturalProductRepository.save(np);
-                //System.out.println("Saved natural products without sugar and NPL score");
-
-            }
-            else{
-                //molecule is only sugar - need to work only on the sugar version
-
-                //molecule after sugar removal is null - only sugar
-                np.setContains_sugar(2);
-
-                Hashtable<String, Integer> fragmentsWithSugar = generateCountedAtomSignatures(acFull, height);
-
-
-                //computing the NPL score with the Sugar
-                for (String f : fragmentsWithSugar.keySet()) {
-
-                    Fragment foundFragment = fragmentRepository.findBySignatureAndWithsugar(f, 1);
-
-                    if(foundFragment==null){
-                        //it is a new fragment!
-                        Fragment newFragment = new Fragment();
-                        newFragment.setHeight(height);
-                        newFragment.setWith_sugar(1);
-                        newFragment.setSignature(f);
-                        newFragment.setScorenp(1.0);
-                        newFragment.presentInMolecules.add(np);
-                        foundFragment = fragmentRepository.save(newFragment);
+                    MurckoFragmenter murckoFragmenter = new MurckoFragmenter(true, 3);
+                    murckoFragmenter.generateFragments(acFull);
+                    if (murckoFragmenter.getFragments() != null && murckoFragmenter.getFragments().length > 0) {
+                        np.setMurko_framework(murckoFragmenter.getFrameworks()[0]);
+                        uniqueNaturalProductRepository.save(np);
                     }
 
-                    npl_score_with_sugar = npl_score_with_sugar + (foundFragment.getScorenp() * fragmentsWithSugar.get(f));
-
-                    np.addFragmentWithSugar(f, fragmentsWithSugar.get(f));
-
-                }
-                npl_score_with_sugar = npl_score_with_sugar / np.getTotal_atom_number();
-                np.setNpl_sugar_score(npl_score_with_sugar);
-
-
-                uniqueNaturalProductRepository.save(np);
-
-                //System.out.println("Saved natural products with only sugars and NPL score");
-            }
-
-
-            //Calculate Murko Framework
-
-            try {
-                MurckoFragmenter murckoFragmenter = new MurckoFragmenter(true, 3);
-                murckoFragmenter.generateFragments(acFull);
-                if(murckoFragmenter.getFragments() != null && murckoFragmenter.getFragments().length >0) {
-                    np.setMurko_framework(murckoFragmenter.getFrameworks()[0]);
+                } catch (CDKException | NullPointerException e) {
+                    //e.printStackTrace();
+                    System.out.println("Failed creating Murcko fragment");
+                    np.setMurko_framework("");
                     uniqueNaturalProductRepository.save(np);
                 }
-
-            } catch (CDKException | NullPointerException e) {
-                //e.printStackTrace();
-                System.out.println("Failed creating Murcko fragment");
-                np.setMurko_framework("");
-                uniqueNaturalProductRepository.save(np);
-            }
-
+            //}
 
         }
         Date date = new Date();

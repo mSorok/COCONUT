@@ -1,0 +1,19 @@
+# Curation and updating of NP annotations in COCONUT
+
+Order of scripts for an optimal parsing
+
+python3 COCONUTupdater.py
+
+python3 VerifyNames.py # adds IUPAC names when name is missing
+
+python VerifyXlinks.py # cleans up the X links to other major databases and adds pretty DB names
+
+python3 Add_deep_SMILES.py
+
+python3 Add_chemical_classification.py
+
+python3 VerifyIntegersInFields.py
+
+python3 Verify_star_annotation.py
+
+

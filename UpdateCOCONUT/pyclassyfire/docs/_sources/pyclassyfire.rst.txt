@@ -1,0 +1,10 @@
+pyclassyfire API
+================
+
+pyclassyfire\.client module
+---------------------------
+
+.. automodule:: pyclassyfire.client
+    :members:
+    :undoc-members:
+    :show-inheritance:

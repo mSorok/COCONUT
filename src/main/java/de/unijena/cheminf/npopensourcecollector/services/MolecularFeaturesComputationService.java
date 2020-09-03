@@ -1,9 +1,6 @@
 package de.unijena.cheminf.npopensourcecollector.services;
 
-import de.unijena.cheminf.npopensourcecollector.mongocollections.SyntheticMolecule;
-import de.unijena.cheminf.npopensourcecollector.mongocollections.SyntheticMoleculeRepository;
-import de.unijena.cheminf.npopensourcecollector.mongocollections.UniqueNaturalProduct;
-import de.unijena.cheminf.npopensourcecollector.mongocollections.UniqueNaturalProductRepository;
+import de.unijena.cheminf.npopensourcecollector.mongocollections.*;
 import org.openscience.cdk.DefaultChemObjectBuilder;
 import org.openscience.cdk.aromaticity.Aromaticity;
 import org.openscience.cdk.aromaticity.ElectronDonation;
@@ -90,7 +87,7 @@ public class MolecularFeaturesComputationService {
                     indexes.add(i);
                 }
 
-                UniqueNaturalProduct.PubchemFingerPrintsCounts pcClass = unp.new PubchemFingerPrintsCounts(indexes.size(),indexes );
+                PubchemFingerPrintsCounts pcClass = new PubchemFingerPrintsCounts(indexes.size(),indexes );
 
                 unp.pfCounts = pcClass;
 

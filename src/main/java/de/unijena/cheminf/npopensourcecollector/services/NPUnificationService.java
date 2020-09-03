@@ -214,13 +214,16 @@ public class NPUnificationService {
                 if(snp.getSource() != null){
                     unp.found_in_databases.add(snp.getSource());
 
-                    ArrayList<String> miniXref = new ArrayList<String>();
-                    miniXref.add(snp.getSource());
-                    miniXref.add(snp.idInSource);
+
+
                     if(sourceURLs.containsKey(snp.getSource())) {
+                        ArrayList<String> miniXref = new ArrayList<String>();
+                        miniXref.add(snp.getSource());
+                        miniXref.add(snp.idInSource);
                         miniXref.add(sourceURLs.get(snp.getSource()));
+                        unp.xrefs.add(miniXref);
                     }
-                    unp.xrefs.add(miniXref);
+
                 }
 
                 //Absolute smiles (with stereochemistry)
@@ -552,11 +555,6 @@ public class NPUnificationService {
                 if(sourceName.equals("streptomedb")){
                     urls.put("streptomedb", "http://132.230.56.4/streptomedb2/get_drugcard/");
                 }
-
-
-
-
-
 
             }
         }

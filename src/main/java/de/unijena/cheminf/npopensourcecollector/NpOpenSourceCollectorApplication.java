@@ -75,7 +75,7 @@ public class NpOpenSourceCollectorApplication implements CommandLineRunner {
 
 
 
-        System.out.println("Code version from 30th of June 2020");
+        System.out.println("Code version from 24th of August 2020");
 
         if (args.length > 0) {
 
@@ -181,7 +181,7 @@ public class NpOpenSourceCollectorApplication implements CommandLineRunner {
             else { //Filling from scratch
                 //cleaning the DB before filling it
 
-                mongoTemplate.getDb().drop();
+
 
                 String dataDirectory = args[0];
 
@@ -191,6 +191,7 @@ public class NpOpenSourceCollectorApplication implements CommandLineRunner {
                 if (canContinue) {
                     //insert in mongodb
 
+                    mongoTemplate.getDb().drop();
 
                     readerService.readMolecularFilesAndInsertInMongo();
 
@@ -239,9 +240,11 @@ public class NpOpenSourceCollectorApplication implements CommandLineRunner {
 
                     fingerprintsCountsFiller.doWork();
 
+                    molecularFeaturesComputationService.createPubchemBitCounts();
+
                     molecularFeaturesComputationService.generateUniqueSmiles();
 
-                    molecularFeaturesComputationService.createPubchemBitCounts();
+
 
                     //read and insert synthetic molecules
                     //readerService.readSyntheticMoleculesAndInsertInMongo(args[1]); //tsv file

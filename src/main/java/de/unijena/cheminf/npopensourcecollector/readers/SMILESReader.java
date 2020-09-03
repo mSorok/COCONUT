@@ -71,7 +71,7 @@ public class SMILESReader implements Reader {
                 String smiles_names = line;
 
                 if(!line.contains("smiles")) {
-                    try {
+                        try {
                         String[] splitted = smiles_names.split("\\s+"); //splitting the canonical smiles format: SMILES \s mol name
                         SmilesParser sp = new SmilesParser(DefaultChemObjectBuilder.getInstance());
 

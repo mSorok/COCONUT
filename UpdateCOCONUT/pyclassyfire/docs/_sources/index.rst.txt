@@ -1,0 +1,25 @@
+.. pyclassyfire documentation master file, created by
+   sphinx-quickstart on Mon May 15 14:31:20 2017.
+   You can adapt this file completely to your liking, but it should at least
+   contain the root `toctree` directive.
+
+pyclassyfire documentation
+==========================
+
+This package provides a set of helper functions in python for
+annotating chemical structures with the chemical ontology developed by
+Djoumbou et. al using the ClassyFire API
+
+.. toctree::
+   :maxdepth: 4
+   :caption: Contents:
+
+   pyclassyfire
+
+
+Indices and tables
+==================
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`

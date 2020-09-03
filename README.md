@@ -20,7 +20,7 @@ mongorestore --db=COCONUT --noIndexRestore .
 Note that for system compatibilities reason, it is better to restore the database without the indexes (hence the "noIndexRestore" option).
 However, seen the size of the dataset, we suggest to add the indexes as following:
 
-````bash
+```
 mongo
 use COCONUT2020-07
 
@@ -60,11 +60,11 @@ db.fragment.createIndex({signature:1, withsugar:-1})
 
 
 
-````
+```
 
 #### Required folder structure
 
-````bash
+```
 COCONUT
 ├── coconut-0.0.1-SNAPSHOT.jar # the compiled jar. It can be downloaded from ZENODO: https://zenodo.org/record/3695455
 ├── coconut_ids_june2020.csv
@@ -76,7 +76,7 @@ COCONUT
 │   ├── fragment_without_sugar.txt
 │   ├── fragment_with_sugar.txt
 ├── sm # file(s) with structures of synthetic molecules 
-````
+```
 
 #### Execution options
 

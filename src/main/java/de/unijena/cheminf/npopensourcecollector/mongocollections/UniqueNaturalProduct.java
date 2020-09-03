@@ -3,6 +3,7 @@ package de.unijena.cheminf.npopensourcecollector.mongocollections;
 import org.javatuples.Pair;
 import org.openscience.cdk.fingerprint.IBitFingerprint;
 import org.openscience.cdk.fingerprint.ICountFingerprint;
+import org.springframework.context.annotation.Bean;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -45,12 +46,24 @@ public class UniqueNaturalProduct  {
 
     public Hashtable<String, HashSet<String>> absolute_smiles;
 
+    //@Indexed(name = "name_index")
+    public String name;
+
+    public Integer nameTrustLevel=0; //0=unknown, 1= ; 2=ChEBI; 3=manual
+
+    public Integer annotationLevel=0;
+
+    public HashSet<String> synonyms;
+
     public String cas;
+
+    public String iupac_name;
 
     public boolean contains_ring_sugars;
 
     public boolean contains_linear_sugars;
 
+    public ArrayList<String> collection = new ArrayList<>();
 
 
     //@Indexed(name="molecular_formular_index")
@@ -67,14 +80,7 @@ public class UniqueNaturalProduct  {
 
     public HashSet<String> geoLocation;
 
-    //@Indexed(name = "name_index")
-    public String name;
 
-    public Integer nameTrustLevel=0; //0=unknown, 1= ; 2=ChEBI; 3=manual
-
-    public Integer annotationLevel=0;
-
-    public HashSet<String> synonyms;
 
 
     public Double npl_noh_score;
@@ -128,16 +134,7 @@ public class UniqueNaturalProduct  {
 
     public HashMap<Integer, ArrayList<Integer>> pubfp;
 
-    public class PubchemFingerPrintsCounts{
 
-        public Integer count;
-        public ArrayList<Integer> bits;
-
-        public PubchemFingerPrintsCounts(Integer count, ArrayList<Integer> bits) {
-            this.count = count;
-            this.bits = bits;
-        }
-    }
 
     public PubchemFingerPrintsCounts pfCounts;
 
@@ -149,6 +146,12 @@ public class UniqueNaturalProduct  {
 
     public byte[] pubchemBits;
     public String pubchemBitsString;
+
+
+    public String chemicalSuperClass;
+    public String chemicalClass;
+    public String chemicalSubClass;
+    public String directParentClassification;
 
 
 
@@ -968,5 +971,62 @@ public class UniqueNaturalProduct  {
 
     public void setUnique_smiles(String unique_smiles) {
         this.unique_smiles = unique_smiles;
+    }
+
+    public String getIupac_name() {
+        return iupac_name;
+    }
+
+    public void setIupac_name(String iupac_name) {
+        this.iupac_name = iupac_name;
+    }
+
+    public PubchemFingerPrintsCounts getPfCounts() {
+        return pfCounts;
+    }
+
+    public void setPfCounts(PubchemFingerPrintsCounts pfCounts) {
+        this.pfCounts = pfCounts;
+    }
+
+
+    public ArrayList<String> getCollection() {
+        return collection;
+    }
+
+    public void setCollection(ArrayList<String> collection) {
+        this.collection = collection;
+    }
+
+    public String getChemicalSuperClass() {
+        return chemicalSuperClass;
+    }
+
+    public void setChemicalSuperClass(String chemicalSuperClass) {
+        this.chemicalSuperClass = chemicalSuperClass;
+    }
+
+    public String getChemicalClass() {
+        return chemicalClass;
+    }
+
+    public void setChemicalClass(String chemicalClass) {
+        this.chemicalClass = chemicalClass;
+    }
+
+    public String getChemicalSubClass() {
+        return chemicalSubClass;
+    }
+
+    public void setChemicalSubClass(String chemicalSubClass) {
+        this.chemicalSubClass = chemicalSubClass;
+    }
+
+    public String getDirectParentClassification() {
+        return directParentClassification;
+    }
+
+    public void setDirectParentClassification(String directParentClassification) {
+        this.directParentClassification = directParentClassification;
     }
 }
