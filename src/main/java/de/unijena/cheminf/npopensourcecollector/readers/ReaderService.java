@@ -9,6 +9,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashSet;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -45,25 +48,36 @@ public class ReaderService {
 
         HashSet<String> totalDatabases = new HashSet<String>();
 
-        for(String file : this.molecularFiles){
-            ReadWorker rw = new ReadWorker(file);
+        ExecutorService taskExecutor = Executors.newFixedThreadPool(this.molecularFiles.size());
 
+        for(String file : this.molecularFiles){
+            ReadWorker rw = new ReadWorker();
+            rw.setFileToRead(file);
+
+            rw.acceptFileFormat = rw.acceptFile(file);
             boolean start = rw.startWorker();
 
             if(start){
-                rw.doWork();
-                String source = rw.returnSource();
+                taskExecutor.execute(rw);
+                System.out.println("Task "+file+" executing");
+                String source = file;
                 totalDatabases.add(source);
             }
 
+        }
 
+        taskExecutor.shutdown();
+        try {
+            taskExecutor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
 
         return totalDatabases;
 
     }
 
-    public void readSyntheticMoleculesAndInsertInMongo(String filename){
+    /*public void readSyntheticMoleculesAndInsertInMongo(String filename){
         //check file extension and if it is not empty
         File smFile = new File(filename);
         if(filename.contains("tsv") && smFile.length()>0){
@@ -72,7 +86,7 @@ public class ReaderService {
             rw.doWorkSM();
 
         }
-    }
+    }*/
 
 
 }

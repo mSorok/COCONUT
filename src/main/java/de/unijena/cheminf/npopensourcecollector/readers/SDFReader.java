@@ -186,15 +186,23 @@ public class SDFReader implements Reader{
                             options.add(INCHI_OPTION.SNon);
                             options.add(INCHI_OPTION.ChiralFlagOFF);
                             options.add(INCHI_OPTION.AuxNone);
-                            InChIGenerator gen = InChIGeneratorFactory.getInstance().getInChIGenerator(molecule, options );
 
-                            molecule.setProperty("SIMPLE_INCHI", gen.getInchi());
-                            molecule.setProperty("SIMPLE_INCHIKEY", gen.getInchiKey());
+                            try {
+                                InChIGenerator gen = InChIGeneratorFactory.getInstance().getInChIGenerator(molecule, options);
+
+                                molecule.setProperty("SIMPLE_INCHI", gen.getInchi());
+                                molecule.setProperty("SIMPLE_INCHIKEY", gen.getInchiKey());
+                            }catch (CDKException e2){
+                                System.out.println(molecule.getProperty("ORIGINAL_SMILES").toString() + " in "+this.source);
+                            }
                         }
 
 
                         String simpleSmiles = smilesGenerator.create(molecule);
-                        String absoluteSmiles = absoluteSmilesGenerator.create(molecule);
+
+                        IAtomContainer moleculeImplicitHydrogens = AtomContainerManipulator.removeHydrogens(molecule);
+                        String absoluteSmiles = absoluteSmilesGenerator.create(moleculeImplicitHydrogens);
+
                         molecule.setProperty("SIMPLE_SMILES", simpleSmiles);
 
                         if(!absoluteSmiles.equals(simpleSmiles) && absoluteSmiles.contains("@")) {

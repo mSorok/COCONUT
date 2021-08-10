@@ -41,5 +41,4 @@ public interface UniqueNaturalProductRepository  extends MongoRepository<UniqueN
 
 
 
-
 }

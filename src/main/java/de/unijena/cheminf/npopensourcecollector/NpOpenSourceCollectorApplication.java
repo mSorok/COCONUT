@@ -63,6 +63,10 @@ public class NpOpenSourceCollectorApplication implements CommandLineRunner {
     FingerprintsCountsFiller fingerprintsCountsFiller;
 
 
+    @Autowired
+    IntegratePassPredictions integratePassPredictions;
+
+
 
     public static void main(String[] args) {
         SpringApplication.run(NpOpenSourceCollectorApplication.class, args);
@@ -75,7 +79,7 @@ public class NpOpenSourceCollectorApplication implements CommandLineRunner {
 
 
 
-        System.out.println("Code version from 24th of August 2020");
+        System.out.println("Code version from 15th of March 2021");
 
         if (args.length > 0) {
 
@@ -88,6 +92,9 @@ public class NpOpenSourceCollectorApplication implements CommandLineRunner {
                     TimeUnit.MINUTES.sleep(1);
                 }
 
+            }
+            else if(args[0].equals("fetchPASSpredictions")){
+                integratePassPredictions.readAndInsertPassPredictions(args[1]);
             }
             else if(args[0].equals("cleanRecomputeMissing")){
 
@@ -147,13 +154,19 @@ public class NpOpenSourceCollectorApplication implements CommandLineRunner {
             }
             else if(args[0].equals("onlyAddSM")){
                 //read and insert synthetic molecules
-                readerService.readSyntheticMoleculesAndInsertInMongo(args[1]); //tsv file
-                molecularFeaturesComputationService.doWorkForSM();
+                //readerService.readSyntheticMoleculesAndInsertInMongo(args[1]); //tsv file
+                //molecularFeaturesComputationService.doWorkForSM();
+                System.out.println("Need to reimplement");
             }
             else if(args[0].equals("generateSDF")){
 
                 exportService.generateSDF("COCONUT.sdf");
 
+            }
+            else if(args[0].equals("exportAllFormats")){
+                exportService.generateSimpleSMILESFile("COCONUT.smi");
+                exportService.generateSDF("COCONUT.sdf");
+                exportService.generateFullSMILESfile("COCONUTstereo.smi");
             }
             else if(args[0].equals("generateTSV")){
                 exportService.generateTSV("COCONUT.tsv");
@@ -167,6 +180,7 @@ public class NpOpenSourceCollectorApplication implements CommandLineRunner {
             else if(args[0].equals("updateBitFingerprints")){
 
                 molecularFeaturesComputationService.convertToBitSet();
+
             }else if(args[0].equals("createPubchemBitCounts")) {
                 molecularFeaturesComputationService.createPubchemBitCounts();
 
@@ -175,9 +189,9 @@ public class NpOpenSourceCollectorApplication implements CommandLineRunner {
             }else if (args[0].equals("namesToLowerCase")){
                 namingService.namesToLowcase();
             }
-            else if(args[0].equals("generateUniqueSmiles")){
+            /*else if(args[0].equals("generateUniqueSmiles")){
                 molecularFeaturesComputationService.generateUniqueSmiles();
-            }
+            }*/
             else { //Filling from scratch
                 //cleaning the DB before filling it
 
@@ -191,6 +205,7 @@ public class NpOpenSourceCollectorApplication implements CommandLineRunner {
                 if (canContinue) {
                     //insert in mongodb
 
+
                     mongoTemplate.getDb().drop();
 
                     readerService.readMolecularFilesAndInsertInMongo();
@@ -198,6 +213,8 @@ public class NpOpenSourceCollectorApplication implements CommandLineRunner {
                     //unify
                     //npUnificationService.fetchSourceNames();
                     npUnificationService.doWork();
+
+                    //molecularFeaturesComputationService.generateUniqueSmiles();
 
 
                     fragmentReaderService.doWork(0, args[2]);
@@ -207,7 +224,6 @@ public class NpOpenSourceCollectorApplication implements CommandLineRunner {
                     //fragmentCalculatorService.doWork();
 
                     fragmentCalculatorService.doParallelizedWork(40);
-
 
 
                     System.out.println("Done fragmenting natural products");
@@ -224,7 +240,14 @@ public class NpOpenSourceCollectorApplication implements CommandLineRunner {
 
                         System.out.println("done importing IDS and generating news ones");
                     }else{
-                        createCNPidService.createDeNovoIDs();
+
+                        if(Arrays.asList(args).contains("idPrefix")){
+                            int index_of_prefix = Arrays.asList(args).indexOf("idPrefix")+1;
+                            createCNPidService.createDeNovoIDs(args[index_of_prefix]);
+                        }else {
+
+                            createCNPidService.createDeNovoIDs();
+                        }
                     }
 
                     //evaluate annotation level
@@ -240,9 +263,17 @@ public class NpOpenSourceCollectorApplication implements CommandLineRunner {
 
                     fingerprintsCountsFiller.doWork();
 
+
+
+
+
                     molecularFeaturesComputationService.createPubchemBitCounts();
 
-                    molecularFeaturesComputationService.generateUniqueSmiles();
+                    if(Arrays.asList(args).contains("passPredictions")){
+                        int index_of_passfile = Arrays.asList(args).indexOf("passPredictions")+1;
+                        integratePassPredictions.readAndInsertPassPredictions(args[index_of_passfile]);
+                    }
+
 
 
 

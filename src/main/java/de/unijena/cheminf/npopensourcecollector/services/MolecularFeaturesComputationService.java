@@ -77,7 +77,7 @@ public class MolecularFeaturesComputationService {
 
             IAtomContainer molecule = null;
             try {
-                molecule = sp.parseSmiles(unp.smiles);
+                molecule = sp.parseSmiles(unp.unique_smiles);
 
 
 
@@ -109,15 +109,21 @@ public class MolecularFeaturesComputationService {
     }
 
 
-    public void generateUniqueSmiles(){
+    private void generateUniqueSmiles(){
         System.out.println("Generating nice smiles");
-        List<String> allCoconutIds = uniqueNaturalProductRepository.findAllCoconutIds();
+
 
         SmilesParser sp = new SmilesParser(DefaultChemObjectBuilder.getInstance());
 
-        for(String coconut_id : allCoconutIds){
+        //List<String> allInchiKeys = uniqueNaturalProductRepository.findAllInchiKeys();
 
-            UniqueNaturalProduct unp = uniqueNaturalProductRepository.findByCoconut_id(coconut_id).get(0);
+        List<UniqueNaturalProduct> allNPs = uniqueNaturalProductRepository.findAll();
+
+        System.out.println("Retrieved "+allNPs.size()+" distinct NPs");
+
+        for(UniqueNaturalProduct unp : allNPs){
+
+            //UniqueNaturalProduct unp = uniqueNaturalProductRepository.findByInchikey(inchikey).get(0);
 
             IAtomContainer molecule = null;
             try {
@@ -436,10 +442,6 @@ public class MolecularFeaturesComputationService {
     }catch(NullPointerException e){
             System.out.println("Failed to compute the Ertl functional groups for "+np.getInchikey());
         }
-
-
-
-
 
         return np;
 

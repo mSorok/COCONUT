@@ -13,6 +13,16 @@ import java.util.*;
 
 @Document
 public class UniqueNaturalProduct  {
+    public UniqueNaturalProduct(){
+        this.fragments = new Hashtable<>();
+        this.fragmentsWithSugar = new Hashtable<>();
+        this.ertlFunctionalFragments = new Hashtable<>();
+        this.allTaxa = new HashSet<>();
+        this.allChemClassifications = new HashSet<>();
+        this.allWikidataIds = new HashSet<>();
+    }
+
+
 
 
     @Id
@@ -71,12 +81,6 @@ public class UniqueNaturalProduct  {
 
     public Double molecular_weight;
 
-
-    public HashSet<String> citationDOI;
-
-    public HashSet<Integer> taxid;
-
-    public HashSet<String> textTaxa;
 
     public HashSet<String> geoLocation;
 
@@ -148,18 +152,59 @@ public class UniqueNaturalProduct  {
     public String pubchemBitsString;
 
 
+
+
+
+
+    public ArrayList<ArrayList<String>> pass_bioactivity_predictions;
+    public ArrayList<String> pass_bioactivity_searcheable;
+
+
+
+    //TODO modify the next three fields to fit more to the LOTUS taxonomy and reference format!
+    public HashSet<String> citationDOI;
+
+    public HashSet<Integer> taxid;
+
+    public HashSet<String> textTaxa;
+
+
+    //CHEMICAL TAXONOMY OLD
     public String chemicalSuperClass;
     public String chemicalClass;
     public String chemicalSubClass;
     public String directParentClassification;
 
 
+    // CHEMICAL TAXONOMY
+
+    public String chemicalTaxonomyNPclassifierPathway;
+    public String chemicalTaxonomyNPclassifierSuperclass;
+    public String chemicalTaxonomyNPclassifierClass;
+
+
+    public String chemicalTaxonomyClassyfireKingdom;
+    public String chemicalTaxonomyClassyfireSuperclass;
+    public String chemicalTaxonomyClassyfireClass;
+    public String chemicalTaxonomyClassyfireDirectParent;
+
+
+    public HashSet<String> allChemClassifications; //TODO fill in the seacheable fields!
+
+
+    //TAXONOMY
+
+    public Hashtable<String,Hashtable<String, HashSet<UncomplicatedTaxonomy>>> taxonomyReferenceObjects;
+    public HashSet<String> allTaxa;
+
+
+    // All wikidata identifiers
+    public HashSet<String> allWikidataIds = null;
 
 
 
 
-    // Symmetry measures
-    //TODO later
+
 
 
     // Molecular descriptors
@@ -248,13 +293,6 @@ public class UniqueNaturalProduct  {
     //Polar surface area expressed as a ratio to molecular size. Calculates tpsaEfficiency, which is to TPSADescriptor / molecular weight, in units of square Angstroms per Dalton. Other related descriptors may also be useful to add, e.g. ratio of polar to hydrophobic surface area.
     public Double tpsaEfficiency;
 
-
-
-    public UniqueNaturalProduct(){
-        this.fragments = new Hashtable<>();
-        this.fragmentsWithSugar = new Hashtable<>();
-        this.ertlFunctionalFragments = new Hashtable<>();
-    }
 
 
     public void addFragment(String f, Integer nbInMolecule){
@@ -1028,5 +1066,21 @@ public class UniqueNaturalProduct  {
 
     public void setDirectParentClassification(String directParentClassification) {
         this.directParentClassification = directParentClassification;
+    }
+
+    public ArrayList<ArrayList<String>> getPass_bioactivity_predictions() {
+        return pass_bioactivity_predictions;
+    }
+
+    public void setPass_bioactivity_predictions(ArrayList<ArrayList<String>> pass_bioactivity_predictions) {
+        this.pass_bioactivity_predictions = pass_bioactivity_predictions;
+    }
+
+    public ArrayList<String> getPass_bioactivity_searcheable() {
+        return pass_bioactivity_searcheable;
+    }
+
+    public void setPass_bioactivity_searcheable(ArrayList<String> pass_bioactivity_searcheable) {
+        this.pass_bioactivity_searcheable = pass_bioactivity_searcheable;
     }
 }

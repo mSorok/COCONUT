@@ -4,10 +4,8 @@ import org.openscience.cdk.DefaultChemObjectBuilder;
 import org.openscience.cdk.aromaticity.Kekulization;
 import org.openscience.cdk.atomtype.CDKAtomTypeMatcher;
 import org.openscience.cdk.exception.CDKException;
-import org.openscience.cdk.interfaces.IAtom;
-import org.openscience.cdk.interfaces.IAtomContainer;
-import org.openscience.cdk.interfaces.IAtomType;
-import org.openscience.cdk.interfaces.IPseudoAtom;
+import org.openscience.cdk.geometry.surface.NeighborList;
+import org.openscience.cdk.interfaces.*;
 import org.openscience.cdk.smiles.SmiFlavor;
 import org.openscience.cdk.smiles.SmilesGenerator;
 import org.openscience.cdk.smiles.SmilesParser;
@@ -16,6 +14,9 @@ import org.openscience.cdk.tools.manipulator.AtomContainerManipulator;
 import org.openscience.cdk.tools.manipulator.AtomTypeManipulator;
 import org.springframework.stereotype.Service;
 
+import javax.sound.midi.SysexMessage;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -43,8 +44,13 @@ public class MoleculeChecker {
 
     public IAtomContainer checkMolecule(IAtomContainer molecule){
 
+        IAtomContainer oriMol = molecule;
+
 
         mcc = BeanUtil.getBean(MoleculeConnectivityChecker.class);
+
+        SmilesGenerator sg = new SmilesGenerator(SmiFlavor.Absolute);
+        SmilesParser sp = new SmilesParser(DefaultChemObjectBuilder.getInstance());
 
         if(!containsStrangeElements(molecule)) {
 
@@ -78,6 +84,7 @@ public class MoleculeChecker {
             }
 
 
+
             // check ID
 
             if (molecule.getID() == "" || molecule.getID() == null) {
@@ -97,6 +104,68 @@ public class MoleculeChecker {
 
             }
 
+            Map<Object, Object> properties = molecule.getProperties();
+            String id = molecule.getID();
+            oriMol = molecule;
+
+
+            //System.out.println(id);
+            molecule = sanitizeMolecularBonds(molecule);
+
+            if(molecule == null){
+                //System.out.println("No sanitization possible");
+                return null;
+            }
+/*
+            try {
+                System.out.println(sg.create(molecule));
+            } catch (CDKException e) {
+                e.printStackTrace();
+            }
+*/
+            //Normalizing the ionization states
+
+            //python3 GetParentSourceNP.py "C[C@H](O)c1ccccc1"
+
+            try {
+                //String command = "evaluate -e majorMicrospecies('7.4') "+sg.create(molecule);
+                String command = "python3 GetParentSourceNP.py "+sg.create(molecule);
+                Process process = Runtime.getRuntime().exec(command);
+
+                BufferedReader reader = new BufferedReader(
+                        new InputStreamReader(process.getInputStream()));
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    String correctSmi = line.replace("\n", "");
+                    if (!line.contains("Normalizer") && !line.contains("charge") && !line.equals("") ){
+
+                        System.out.println(correctSmi);
+
+                    try {
+                        molecule = sp.parseSmiles(correctSmi);
+                        molecule.setProperties(properties);
+                        molecule.setID(id);
+                    } catch (CDKException | IllegalArgumentException e) {
+                        e.printStackTrace();
+
+                        molecule = oriMol;
+                    }
+                }
+                }
+
+                reader.close();
+
+
+            }catch(Exception e){
+                System.out.println("Couldn't start Major Microscpecies calculation: something went wrong");
+                e.printStackTrace();
+                molecule = oriMol;
+            }
+
+
+
+
+
 
             //ElectronDonation model = ElectronDonation.cdk();
             //CycleFinder cycles = Cycles.cdkAromaticSet();
@@ -106,22 +175,6 @@ public class MoleculeChecker {
 
 
 
-            //Homogenize pseudo atoms - all pseudo atoms (PA) as a "*"
-            for (int u = 1; u < molecule.getAtomCount(); u++) {
-                if (molecule.getAtom(u) instanceof IPseudoAtom) {
-
-                    molecule.getAtom(u).setSymbol("*");
-                    molecule.getAtom(u).setAtomTypeName("X");
-                    ((IPseudoAtom) molecule.getAtom(u)).setLabel("*");
-
-                }
-            }
-
-
-            SmilesGenerator sg = new SmilesGenerator(SmiFlavor.Absolute);
-            SmilesParser sp = new SmilesParser(DefaultChemObjectBuilder.getInstance());
-            Map<Object, Object> properties = molecule.getProperties();
-            String id = molecule.getID();
             try {
                 String smi = sg.create(molecule);
                 molecule = sp.parseSmiles(smi);
@@ -173,6 +226,7 @@ public class MoleculeChecker {
 
 
 
+
             //Fixing molecular bonds
             try {
                 Kekulization.kekulize(molecule);
@@ -182,6 +236,10 @@ public class MoleculeChecker {
             } catch (IllegalArgumentException e) {
                 //System.out.println("Could not kekulize molecule "+ this.molecule.getID());
             }
+
+
+
+
 
             return molecule;
         }
@@ -211,6 +269,119 @@ public class MoleculeChecker {
         }
         return false;
 
+    }
+
+    public IAtomContainer removeExcessiveDoubleBonds(IAtomContainer atomContainer, IAtom atom, Integer maxValency){
+
+        List<IBond> listOfBonds = atomContainer.getConnectedBondsList(atom);
+
+
+        int b = 0;
+        while(AtomContainerManipulator.getBondOrderSum(atomContainer, atom)>maxValency && b<listOfBonds.size()){
+            listOfBonds.get(b).setOrder(IBond.Order.SINGLE);
+            b++;
+        }
+
+        return atomContainer;
+
+    }
+
+
+    public IAtomContainer removeExtraHydrogen(IAtomContainer acToModify, IAtom atomToModify, Integer maxValency){
+
+
+
+
+        List<IAtom> neighborsOfTheSuspiciousAtom = acToModify.getConnectedAtomsList(atomToModify);
+
+
+
+        if(atomToModify.getSymbol().equals("C")){
+            // check if no N or O or P in the neighbors. If yes, return, we'll be removing bonds and hydrogens from them instead
+            int t = 0;
+            while(t<neighborsOfTheSuspiciousAtom.size()){
+                if(neighborsOfTheSuspiciousAtom.get(t).getSymbol().equals("O") || neighborsOfTheSuspiciousAtom.get(t).getSymbol().equals("N") || neighborsOfTheSuspiciousAtom.get(t).getSymbol().equals("P") ){
+                    return acToModify;
+                }
+                t++;
+            }
+
+        }
+
+        acToModify = removeExcessiveDoubleBonds(acToModify, atomToModify, maxValency);
+
+
+        int nbHydrogens = atomToModify.getImplicitHydrogenCount();
+
+
+        while(AtomContainerManipulator.getBondOrderSum(acToModify, atomToModify)>maxValency && nbHydrogens>0){
+
+            nbHydrogens = nbHydrogens-1;
+            atomToModify.setImplicitHydrogenCount(nbHydrogens);
+
+        }
+
+        if(AtomContainerManipulator.getBondOrderSum(acToModify, atomToModify)>maxValency){
+            acToModify = null;
+            return acToModify;
+        }
+
+        return(acToModify);
+    }
+
+
+    IAtomContainer sanitizeMolecularBonds(IAtomContainer atomContainer){
+
+
+
+        // Run sanitization on the number of bonds expected for carbons, nitrogens and oxygens
+        // and
+        //Homogenize pseudo atoms - all pseudo atoms (PA) as a "*"
+        for (int u = 1; u < atomContainer.getAtomCount(); u++) {
+
+
+
+            if (atomContainer.getAtom(u) instanceof IPseudoAtom) {
+
+                atomContainer.getAtom(u).setSymbol("*");
+                atomContainer.getAtom(u).setAtomTypeName("X");
+                ((IPseudoAtom) atomContainer.getAtom(u)).setLabel("*");
+
+            }
+
+            //check if the number of bonds is correct. If it's too big, remove the attached hydrogens
+            double bondCount = AtomContainerManipulator.getBondOrderSum(atomContainer, atomContainer.getAtom(u));
+
+
+            if(atomContainer.getAtom(u).getSymbol().equals("Br") && bondCount>1 ){
+
+                atomContainer = removeExtraHydrogen(atomContainer, atomContainer.getAtom(u), 1);
+            }
+            else if(atomContainer.getAtom(u).getSymbol().equals("O") && bondCount>2 ){
+                atomContainer = removeExtraHydrogen(atomContainer, atomContainer.getAtom(u), 2);
+            }
+            else if(atomContainer.getAtom(u).getSymbol().equals("N") && bondCount>3 ){
+                atomContainer = removeExtraHydrogen(atomContainer, atomContainer.getAtom(u), 3);
+
+            }
+            else if(atomContainer.getAtom(u).getSymbol().equals("C") && bondCount>4 ){
+                atomContainer = removeExtraHydrogen(atomContainer, atomContainer.getAtom(u), 4);
+            }
+            else if(atomContainer.getAtom(u).getSymbol().equals("P") && bondCount>5 ){
+                atomContainer = removeExtraHydrogen(atomContainer, atomContainer.getAtom(u), 5);
+            }
+
+            if(atomContainer == null){
+                return null;
+            }
+
+        }
+
+
+
+
+
+        return atomContainer;
     }
 
 

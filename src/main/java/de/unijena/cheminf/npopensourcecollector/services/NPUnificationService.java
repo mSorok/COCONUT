@@ -4,6 +4,7 @@ import de.unijena.cheminf.npopensourcecollector.mongocollections.SourceNaturalPr
 import de.unijena.cheminf.npopensourcecollector.mongocollections.SourceNaturalProductRepository;
 import de.unijena.cheminf.npopensourcecollector.mongocollections.UniqueNaturalProduct;
 import de.unijena.cheminf.npopensourcecollector.mongocollections.UniqueNaturalProductRepository;
+import org.openscience.cdk.DefaultChemObjectBuilder;
 import org.openscience.cdk.atomtype.CDKAtomTypeMatcher;
 import org.openscience.cdk.exception.CDKException;
 import org.openscience.cdk.fingerprint.CircularFingerprinter;
@@ -17,6 +18,7 @@ import org.openscience.cdk.silent.SilentChemObjectBuilder;
 import org.openscience.cdk.smarts.Smarts;
 import org.openscience.cdk.smiles.SmiFlavor;
 import org.openscience.cdk.smiles.SmilesGenerator;
+import org.openscience.cdk.smiles.SmilesParser;
 import org.openscience.cdk.tools.CDKHydrogenAdder;
 import org.openscience.cdk.tools.manipulator.AtomContainerManipulator;
 import org.openscience.cdk.tools.manipulator.AtomTypeManipulator;
@@ -48,6 +50,9 @@ public class NPUnificationService {
     SubstructureFingerprinter substructureFingerprinter = new SubstructureFingerprinter();
 
     ExtendedFingerprinter extendedFingerprinter = new ExtendedFingerprinter();
+
+
+    SmilesGenerator uniqueSmilesGenerator = new SmilesGenerator(SmiFlavor.Unique);
 
 
 
@@ -250,6 +255,23 @@ public class NPUnificationService {
 
             }
 
+
+            // Generate nice unique smiles without hydrogens
+            SmilesParser sp = new SmilesParser(DefaultChemObjectBuilder.getInstance());
+
+            IAtomContainer moleculeNoHydrogens = null;
+            try {
+                moleculeNoHydrogens = sp.parseSmiles(unp.smiles);
+
+                moleculeNoHydrogens = AtomContainerManipulator.suppressHydrogens(moleculeNoHydrogens); // removing explicit hydrogens
+
+                unp.unique_smiles = uniqueSmilesGenerator.create(moleculeNoHydrogens);
+
+
+            } catch (CDKException e) {
+                e.printStackTrace();
+            }
+
             unp = uniqueNaturalProductRepository.save(unp);
 
             //compute molecular parameters for the UniqueNaturalProduct
@@ -374,7 +396,7 @@ public class NPUnificationService {
         } catch (CDKException e) {
             e.printStackTrace();
         }
-        AtomContainerManipulator.convertImplicitToExplicitHydrogens(ac);
+        //AtomContainerManipulator.convertImplicitToExplicitHydrogens(ac);
         AtomContainerManipulator.removeNonChiralHydrogens(ac);
 
         try {

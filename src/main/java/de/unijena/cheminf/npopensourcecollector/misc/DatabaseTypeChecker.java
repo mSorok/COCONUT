@@ -13,7 +13,7 @@ public class DatabaseTypeChecker {
 
 
         private final String[] africa = {"afrodb", "afrocancer", "afromalariadb", "afrotryp", "conmednp", "etm", "mitishamba", "nanpdb", "p-anapl", "sancdb"};
-        private final String[] asia = {"him", "hit", "tcmdb_taiwan", "tcmid", "tipdb", "imppat", "inpacdb"};
+        private final String[] asia = {"him", "hit", "tcmdb_taiwan", "tcmid", "tipdb", "imppat", "inpacdb", "ayurveda"};
         private final String[] europe = {"tppt"};
         private final String[] america = {"nubbedb", "uefs", "biofacquim"};
 
@@ -26,11 +26,11 @@ public class DatabaseTypeChecker {
 
         private final String[] plants = {"uefs","tppt","tmdb","tipdb","tcmid", "tcmdb_taiwan","spektraris","sancdb",
                 "respect","p-anapl", "npact","nanpdb","mitishamba","inpacdb","imppat", "hitdb","himdb","etmdb","conmednp",
-                "afrotryp", "afromalariadb","afrocancer","afrodb", "cmaup"};
-        private final String[] bacteria = {"streptomedb"};
+                "afrotryp", "afromalariadb","afrocancer","afrodb", "cmaup", "ayurveda", "alkamid" };
+        private final String[] bacteria = {"streptomedb", "streptomedb3", "cyanometdb"};
         private final String[] fungi = {"lichendatabase"};
         private final String[] animals = {};
-        private final String[] marine = {"swmd", "mnp"};
+        private final String[] marine = {"swmd", "mnp", "cmnpd"};
         private final String[] mixed = {"nubbedb","npcare","npatlas", "np_atlas_2019_12","npass","analyticon_all_np", "biofacquim"};
 
         private final HashSet<String> taxPlants = new HashSet<String>(Arrays.asList(plants));

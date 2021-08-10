@@ -16,7 +16,7 @@ public class AtomContainerToUniqueNaturalProductService {
 
         try {
             SmilesParser sp  = new SmilesParser(SilentChemObjectBuilder.getInstance());
-            ac   = sp.parseSmiles( unp.smiles );
+            ac   = sp.parseSmiles( unp.unique_smiles );
 
             if(ac == null || ac.isEmpty()){
                 System.out.println("Failed to recreate AC for NP "+unp.inchikey);

@@ -19,7 +19,7 @@ public class CreateCNPidService {
     UniqueNaturalProductRepository uniqueNaturalProductRepository;
 
 
-    public static String prefix= "CNP";
+    public String prefix= "CNP";
 
 
     public void clearIDs(){
@@ -80,6 +80,28 @@ public class CreateCNPidService {
     }
 
 
+
+    public void createDeNovoIDs(String prefix){
+
+        this.prefix = prefix;
+
+        List<UniqueNaturalProduct> allunp = uniqueNaturalProductRepository.findAll();
+
+        int count = 1;
+        for(UniqueNaturalProduct unp : allunp){
+
+
+            String coconut_id = prefix + StringUtils.repeat("0", 7-StringUtils.length(count)) + count;
+
+            unp.setCoconut_id(coconut_id);
+
+            uniqueNaturalProductRepository.save(unp);
+
+            count++;
+
+        }
+
+    }
 
 
     public void createDeNovoIDs(){

@@ -1,0 +1,25 @@
+
+# install conda environment: -----> make a conda env with RDkit, deepsmiles and co
+
+# activate the conda env
+
+
+
+# to build everything from scratch and generate absolutely new compound ids
+
+
+
+
+# to build everything from scratch using previously generated CNP ids
+
+
+# only import COCONUT (CNP) ids
+
+
+# only add new CNP ids to all molecules
+
+
+
+
+# add
+

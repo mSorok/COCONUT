@@ -9,13 +9,17 @@ import de.unijena.cheminf.npopensourcecollector.mongocollections.NPDatabaseRepos
 import de.unijena.cheminf.npopensourcecollector.mongocollections.SourceNaturalProductRepository;
 import org.openscience.cdk.interfaces.IAtomContainer;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
-
-public class ReadWorker {
+@Component
+@Transactional(propagation = Propagation.REQUIRED, readOnly = false)
+public class ReadWorker implements Runnable {
 
 
     private File fileToRead;
-    private boolean acceptFileFormat = false;
+    public boolean acceptFileFormat = false;
     private String submittedFileFormat ;
 
     private String fileSource;
@@ -29,30 +33,11 @@ public class ReadWorker {
     NPDatabaseRepository npDatabaseRepository;
 
 
-    public ReadWorker(String fileName){
-
-        npDatabaseRepository = BeanUtil.getBean(NPDatabaseRepository.class);
-
-        this.fileToRead = new File(fileName);
-
-        //System.out.println("\n\n Working on: "+fileToRead.getName() + "\n\n");
-        System.out.println("\n\n Working on: "+fileToRead.getAbsolutePath() + "\n\n");
-
-        NPDatabase newDB = new NPDatabase();
-        newDB.setLocalFileName(fileToRead.getAbsolutePath());
-
-        npDatabaseRepository.save(newDB);
-
-        acceptFileFormat = acceptFile(fileName);
-
-
-    }
-
-    public ReadWorker(File file){
+    /*public ReadWorker(File file){
         this.fileToRead = file;
         System.out.println("\n\n Working on: "+fileToRead.getAbsolutePath() + "\n\n");
 
-    }
+    }*/
 
 
 
@@ -67,7 +52,7 @@ public class ReadWorker {
 
     }
 
-    private boolean acceptFile(String filename) {
+    public boolean acceptFile(String filename) {
         filename = filename.toLowerCase();
         if (filename.endsWith("sdf") || filename.toLowerCase().contains("sdf".toLowerCase())) {
             this.submittedFileFormat="sdf";
@@ -105,7 +90,39 @@ public class ReadWorker {
 
 
 
-    public void doWork(){
+
+
+
+    public void doWorkSM(){
+
+        SMReader smReader = new SMReader();
+        smReader.readFile(this.fileToRead);
+
+    }
+
+
+    /*public String returnSource(){
+        return this.reader.returnSource();
+    }*/
+
+
+    @Override
+    public void run() {
+
+
+        npDatabaseRepository = BeanUtil.getBean(NPDatabaseRepository.class);
+
+        //System.out.println("\n\n Working on: "+fileToRead.getName() + "\n\n");
+        System.out.println("\n\n Working on: "+fileToRead.getAbsolutePath() + "\n\n");
+
+        NPDatabase newDB = new NPDatabase();
+        newDB.setLocalFileName(fileToRead.getAbsolutePath());
+
+        npDatabaseRepository.save(newDB);
+
+
+
+
 
 
         if(this.submittedFileFormat.equals("mol")){
@@ -129,18 +146,7 @@ public class ReadWorker {
     }
 
 
-    public void doWorkSM(){
-
-        SMReader smReader = new SMReader();
-        smReader.readFile(this.fileToRead);
-
+    public void setFileToRead(String fileName){
+        this.fileToRead = new File(fileName);
     }
-
-
-    public String returnSource(){
-        return this.reader.returnSource();
-    }
-
-
-
 }

@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.ConversionFailedException;
 import org.springframework.stereotype.Service;
 
+import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -50,6 +51,95 @@ public class ExportService {
 
 
         System.out.println("done");
+
+    }
+
+    public void generateFullSDF(String filename){
+
+        System.out.println("Generating the full SDF file for all stereo COCONUT");
+
+        //TODO
+
+    }
+
+    public void generateFullSMILESfile(String filename){
+
+        System.out.println("Generating all stereo SMILES file for all COCONUT");
+
+
+
+        try {
+            BufferedWriter writer = new BufferedWriter(new FileWriter(filename));
+
+            List<String> coconut_ids = uniqueNaturalProductRepository.findAllCoconutIds();
+            int count = 0;
+
+            for(String coconut_id : coconut_ids){
+                UniqueNaturalProduct np = uniqueNaturalProductRepository.findByCoconut_id(coconut_id).get(0);
+
+                String baseSmiles = np.unique_smiles;
+
+                writer.write(baseSmiles+" "+coconut_id+"\n");
+
+                int counter=1;
+
+                for(String absoluteSmiles : np.absolute_smiles.keySet()){
+                    if(!np.absolute_smiles.get(absoluteSmiles).equals("nostereo") && !np.absolute_smiles.get(absoluteSmiles).equals(np.unique_smiles)){
+
+                        writer.write(np.absolute_smiles.get(absoluteSmiles) + " "+coconut_id+"."+counter + "\n");
+                        counter = counter+1;
+                    }
+
+
+                }
+
+                count++;
+
+                if (count % 50000 == 0) {
+                    System.out.println("Molecules written: " + count);
+                }
+
+            }
+
+            writer.close();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    public void generateSimpleSMILESFile(String filename){
+
+        System.out.println("Generating SMILES file for all COCONUT");
+
+
+
+        try {
+            BufferedWriter writer = new BufferedWriter(new FileWriter(filename));
+
+            List<String> coconut_ids = uniqueNaturalProductRepository.findAllCoconutIds();
+            int count = 0;
+
+            for(String coconut_id : coconut_ids){
+                UniqueNaturalProduct np = uniqueNaturalProductRepository.findByCoconut_id(coconut_id).get(0);
+
+                writer.write(np.unique_smiles+" "+coconut_id+"\n");
+
+                count++;
+
+                if (count % 50000 == 0) {
+                    System.out.println("Molecules written: " + count);
+                }
+
+            }
+
+            writer.close();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
 
     }
 
